@@ -16,7 +16,9 @@ public class ModItems {
 
     public static final Supplier<BlockItem> RESEARCH_VESSEL_BLOCK_ITEM = ITEMS.register(
             "research_vessel",
-            () -> new ResearchVesselBlockItem(ModBlocks.RESEARCH_VESSEL_BLOCK.get(), new Item.Properties())
+            () -> new ResearchVesselBlockItem(ModBlocks.RESEARCH_VESSEL_BLOCK.get(),
+                    new Item.Properties()
+                            .stacksTo(1))
     );
 
     public static final Supplier<BlockItem> ENDER_ARCHIVE_BLOCK_ITEM = ITEMS.register(
