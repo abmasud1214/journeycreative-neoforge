@@ -1,5 +1,6 @@
 package mod.journeycreative.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import mod.journeycreative.screen.TrashcanInventory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -725,16 +726,14 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         super.render(context, mouseX, mouseY, deltaTicks);
-        Iterator var5 = currentPage.getVisibleTabs().iterator();
 
-
-        while (var5.hasNext()) {
-            CreativeModeTab itemGroup = (CreativeModeTab)var5.next();
-            if (itemGroup.getType() == CreativeModeTab.Type.HOTBAR) continue;
-            if (this.renderTabTooltipIfHovered(context, itemGroup, mouseX, mouseY)) {
-                break;
-            }
+        if (this.deleteItemSlot != null &&
+                selectedTab.getType() == CreativeModeTab.Type.INVENTORY &&
+                this.isHovering(this.deleteItemSlot.x, this.deleteItemSlot.y, 16, 16, (double) mouseX, (double) mouseY)) {
+            context.renderTooltip(this.font, DELETE_ITEM_SLOT_TEXT, mouseX, mouseY);
         }
+
+        Iterator var5 = currentPage.getVisibleTabs().iterator();
 
         if (this.pages.size() != 1) {
             Component page = Component.literal(String.format("%d / %d", this.pages.indexOf(this.currentPage) + 1, this.pages.size()));
@@ -744,12 +743,15 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             context.pose().popPose();
         }
 
-        if (this.deleteItemSlot != null &&
-                selectedTab.getType() == CreativeModeTab.Type.INVENTORY &&
-                this.isHovering(this.deleteItemSlot.x, this.deleteItemSlot.y, 16, 16, (double) mouseX, (double) mouseY)) {
-            context.renderTooltip(this.font, DELETE_ITEM_SLOT_TEXT, mouseX, mouseY);
+        while (var5.hasNext()) {
+            CreativeModeTab itemGroup = (CreativeModeTab)var5.next();
+            if (itemGroup.getType() == CreativeModeTab.Type.HOTBAR) continue;
+            if (this.renderTabTooltipIfHovered(context, itemGroup, mouseX, mouseY)) {
+                break;
+            }
         }
 
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         this.renderTooltip(context, mouseX, mouseY);
     }
 
@@ -823,7 +825,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     }
 
     private int getTabX(CreativeModeTab group) {
-        int i = group.column();
+        int i = this.currentPage.getColumn(group);
         int k = 27 * i;
         if (group.isAlignedRight()) {
             k = this.imageWidth - 27 * (7 - i) + 1;
@@ -834,7 +836,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
 
     private int getTabY(CreativeModeTab group) {
         int i = 0;
-        if (group.row() == CreativeModeTab.Row.TOP) {
+        if (this.currentPage.isTop(group)) {
             i -= 32;
         } else {
             i += this.imageHeight;
