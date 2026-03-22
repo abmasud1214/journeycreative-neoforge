@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#E#",
+    "SCS",
+    "#X#"
+  ],
+  "key": {
+    "#": {"item" : "minecraft:dragon_breath"},
+    "E": {"item" : "minecraft:ender_eye"},
+    "S": {"item" : "minecraft:shulker_shell"},
+    "C": {"item" : "minecraft:chest"},
+    "X": {"item" : "minecraft:end_crystal"}
+  },
+  "result": {
+    "count": 1,
+    "id": "journeycreative:research_vessel"
+  }
+}

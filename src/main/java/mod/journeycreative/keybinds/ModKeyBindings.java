@@ -1,0 +1,33 @@
+package mod.journeycreative.keybinds;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import mod.journeycreative.JourneyCreative;
+import net.minecraft.client.KeyMapping;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.common.util.Lazy;
+import org.lwjgl.glfw.GLFW;
+
+@EventBusSubscriber(modid = JourneyCreative.MODID)
+public class ModKeyBindings {
+    public static Lazy<KeyMapping> ROTATE_INVENTORY = Lazy.of(() -> new KeyMapping(
+            "key.journeycreative.rotate_inventory",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_UNKNOWN,
+            "category.journeycreative"
+    ));
+
+    public static Lazy<KeyMapping> REVERSE_ROTATE_INVENTORY = Lazy.of(() -> new KeyMapping(
+            "key.journeycreative.reverse_rotate_inventory",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_UNKNOWN,
+            "category.journeycreative"
+    ));
+
+    @SubscribeEvent
+    public static void register(RegisterKeyMappingsEvent event) {
+        event.register(ROTATE_INVENTORY.get());
+        event.register(REVERSE_ROTATE_INVENTORY.get());
+    }
+}

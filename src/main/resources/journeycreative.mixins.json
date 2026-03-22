@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "mod.journeycreative.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "InventoryScreenMixin",
+    "ScreenAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
