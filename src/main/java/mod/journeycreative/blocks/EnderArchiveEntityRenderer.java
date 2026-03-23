@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -29,11 +28,7 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
 
     @Override
     public void render(EnderArchiveBlockEntity enderArchiveBlockEntity, float f, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, int j) {
-        BlockState state = enderArchiveBlockEntity.getBlockState();
-        Direction direction = Direction.NORTH;
-        if (state.hasProperty(EnderArchiveBlock.FACING)) {
-            direction = (Direction) enderArchiveBlockEntity.getBlockState().getValue(EnderArchiveBlock.FACING);
-        }
+        Direction direction = (Direction) enderArchiveBlockEntity.getBlockState().getValueOrElse(EnderArchiveBlock.FACING, Direction.NORTH);
 
         float[] g = enderArchiveBlockEntity.getBookTransparency(f);
         this.render(matrixStack, vertexConsumerProvider, i, j, direction, g);
@@ -54,7 +49,7 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
         matrices.mulPose(new Quaternionf().rotateZ((float)Math.toRadians(180)));
         matrices.translate(-0.5, -0.5, -0.5);
         VertexConsumer bookTexture = vertexConsumers.getBuffer(RenderType.entityTranslucent(TEXTURE));
-        Vec3i normalVec = facing.getNormal();
+        Vec3i normalVec = facing.getUnitVec3i();
         for (int i = 0; i < 6; i++) {
             renderbook(matrices.last(), bookTexture, renderPos(i), uvRanges(i), transparency[i], light, normalVec);
         }

@@ -44,9 +44,9 @@ public class ResearchVesselBlockItem extends BlockItem {
             }
 
             if (quantity < capacity) {
-                tooltip.add(Component.translatable("item.journeycreative.research_vessel.tooltip.status", quantity, capacity, target.getItem().getDescription()).withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("item.journeycreative.research_vessel.tooltip.status", quantity, capacity, target.getItem().getName()).withStyle(ChatFormatting.YELLOW));
             } else {
-                tooltip.add(Component.translatable("item.journeycreative.research_vessel.tooltip.status", quantity, capacity, target.getItem().getDescription()).withStyle(ChatFormatting.GREEN));
+                tooltip.add(Component.translatable("item.journeycreative.research_vessel.tooltip.status", quantity, capacity, target.getItem().getName()).withStyle(ChatFormatting.GREEN));
             }
         }
     }

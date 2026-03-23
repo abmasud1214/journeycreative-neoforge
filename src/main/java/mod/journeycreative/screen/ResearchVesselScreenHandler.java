@@ -263,9 +263,9 @@ public class ResearchVesselScreenHandler extends AbstractContainerMenu {
             ArrayList<Component> prereqs = new ArrayList<>();
             if (!prerequisites.isEmpty()) {
                 for (ResourceLocation id : prerequisites) {
-                    ItemStack prereqStack = new ItemStack(BuiltInRegistries.ITEM.get(id), 1);
+                    ItemStack prereqStack = new ItemStack(BuiltInRegistries.ITEM.getValue(id), 1);
                     if (!playerUnlocksData.isUnlocked(prereqStack, serverWorld.getGameRules().getBoolean(JourneyCreative.RESEARCH_ITEMS_UNLOCKED))) {
-                        prereqs.add(prereqStack.getHoverName());
+                        prereqs.add(prereqStack.getItemName());
                     }
                 }
             }
@@ -274,7 +274,7 @@ public class ResearchVesselScreenHandler extends AbstractContainerMenu {
                 prereqText.append(Component.literal("["));
                 prereqText.append(ComponentUtils.formatList(prereqs, Component.literal(", ")));
                 prereqText.append(Component.literal("]"));
-                Component warning = Component.translatable("item.journeycreative.research_certificate.need_prerequisite", prereqText, target.getHoverName());
+                Component warning = Component.translatable("item.journeycreative.research_certificate.need_prerequisite", prereqText, target.getItemName());
                 this.warning = warning;
                 PacketDistributor.sendToPlayer(serverPlayer, new JourneyNetworking.ItemWarningMessage(warning));
             } else {

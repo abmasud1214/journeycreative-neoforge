@@ -2,6 +2,8 @@ package mod.journeycreative.blocks;
 
 import mod.journeycreative.JourneyCreative;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,7 +22,8 @@ public class ModBlocks {
 
     public static final DeferredBlock<ResearchVesselBlock> RESEARCH_VESSEL_BLOCK = BLOCKS.register(
             "research_vessel",
-            () -> new ResearchVesselBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CHEST)
+            registryName -> new ResearchVesselBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CHEST)
+                    .setId(ResourceKey.create(Registries.BLOCK, registryName))
                     .noOcclusion()
                     .strength(1.0F, 1200.0F)
                     .lightLevel(state -> state.getValue(ResearchVesselBlock.OPENED) ? 10 : 0))
@@ -28,27 +31,26 @@ public class ModBlocks {
 
     public static final Supplier<BlockEntityType<ResearchVesselBlockEntity>> RESEARCH_VESSEL_BLOCK_ENTITY = BLOCK_ENTITIES.register(
             "research_vessel",
-            () -> BlockEntityType.Builder.of(
+            () -> new BlockEntityType<>(
                     ResearchVesselBlockEntity::new,
                     RESEARCH_VESSEL_BLOCK.get()
                     )
-                    .build(null)
     );
 
     public static final DeferredBlock<EnderArchiveBlock> ENDER_ARCHIVE_BLOCK = BLOCKS.register(
             "ender_archive",
-            () -> new EnderArchiveBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CHISELED_BOOKSHELF)
+            registryName -> new EnderArchiveBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CHISELED_BOOKSHELF)
+                    .setId(ResourceKey.create(Registries.BLOCK, registryName))
                     .strength(5.0F, 1200.0F)
                     .lightLevel(state -> 5))
     );
 
     public static final Supplier<BlockEntityType<EnderArchiveBlockEntity>> ENDER_ARCHIVE_BLOCK_ENTITY = BLOCK_ENTITIES.register(
             "ender_archive",
-            () -> BlockEntityType.Builder.of(
+            () -> new BlockEntityType<>(
                     EnderArchiveBlockEntity::new,
                     ENDER_ARCHIVE_BLOCK.get()
             )
-                    .build(null)
     );
 
     public static void initialize(IEventBus modEventBus) {

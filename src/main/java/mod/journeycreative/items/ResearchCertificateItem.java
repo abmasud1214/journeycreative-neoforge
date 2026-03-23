@@ -6,6 +6,7 @@ import mod.journeycreative.networking.JourneyNetworking;
 import mod.journeycreative.networking.PlayerUnlocksData;
 import mod.journeycreative.networking.StateSaverAndLoader;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -14,7 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
@@ -47,7 +48,7 @@ public class ResearchCertificateItem extends Item {
             return Component.literal("Unknown Item");
         }
 
-        return item.getDescription();
+        return item.getName();
     }
 
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag type) {
@@ -59,15 +60,9 @@ public class ResearchCertificateItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-        ItemStack itemStack = user.getItemInHand(hand);
-
-        if (user.getCooldowns().isOnCooldown(this)) {
-            return InteractionResultHolder.fail(itemStack);
-        }
-
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
         user.startUsingItem(hand);
-        return InteractionResultHolder.consume(itemStack);
+        return InteractionResult.CONSUME;
     }
 
     @Override
@@ -76,8 +71,8 @@ public class ResearchCertificateItem extends Item {
     }
 
     @Override
-    public UseAnim getUseAnimation(ItemStack stack) {
-        return UseAnim.BLOCK;
+    public ItemUseAnimation getUseAnimation(ItemStack stack) {
+        return ItemUseAnimation.BLOCK;
     }
 
     @Override
@@ -108,7 +103,7 @@ public class ResearchCertificateItem extends Item {
             ArrayList<Component> prereqs = new ArrayList<>();
             if (!prerequisites.isEmpty()) {
                 for (ResourceLocation id : prerequisites) {
-                    ItemStack prereqStack = new ItemStack(BuiltInRegistries.ITEM.get(id), 1);
+                    ItemStack prereqStack = new ItemStack(BuiltInRegistries.ITEM.getValue(id), 1);
                     if (!playerState.isUnlocked(prereqStack, serverWorld.getGameRules().getBoolean(JourneyCreative.RESEARCH_ITEMS_UNLOCKED))) {
                         prereqs.add(getItemName(prereqStack));
                     }
@@ -130,10 +125,8 @@ public class ResearchCertificateItem extends Item {
             if (unlocked) {
                 player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.unlocked", getItemName(research_target)), true);
                 stack.shrink(1);
-                player.getCooldowns().addCooldown(this, 10);
             } else {
                 player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.already_unlocked", getItemName(research_target)), true);
-                player.getCooldowns().addCooldown(this, 10);
             }
         }
         return stack;

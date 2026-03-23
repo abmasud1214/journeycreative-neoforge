@@ -44,7 +44,6 @@ public class EnderArchiveBlockEntity extends BlockEntity {
                         this.booksPresent[i] = BookPresent.APPEARING;
                         this.targetTransparency[i] = (float) (Math.random() * 0.6 + 0.4); // between .4 and .6
                         this.timeUntilGone[i] = 20 * 120 * this.targetTransparency[i];
-//                        this.targetTransparency[i] = 1;
                     }
                     break;
                 case 1: // Book appearing

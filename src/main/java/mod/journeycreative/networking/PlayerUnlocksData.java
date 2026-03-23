@@ -53,8 +53,8 @@ public class PlayerUnlocksData {
         });
 
         if (researchItems) {
-            ItemStack researchVessel = normalizeForUnlocks(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "research_vessel")), 1));
-            ItemStack enderArchive = normalizeForUnlocks(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "ender_archive")), 1));
+            ItemStack researchVessel = normalizeForUnlocks(new ItemStack(BuiltInRegistries.ITEM.getValue(ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "research_vessel")), 1));
+            ItemStack enderArchive = normalizeForUnlocks(new ItemStack(BuiltInRegistries.ITEM.getValue(ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "ender_archive")), 1));
             if (ItemStack.isSameItemSameComponents(researchVessel, normalized)) equal.set(true);
             if (ItemStack.isSameItemSameComponents(enderArchive, normalized)) equal.set(true);
         }

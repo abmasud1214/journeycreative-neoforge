@@ -20,16 +20,15 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.searchtree.SearchTree;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
@@ -103,6 +102,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     private boolean ignoreTypedCharacter;
     private boolean lastClickOutsideBounds;
     private final Set<TagKey<Item>> searchResultTags = new HashSet();
+    private final EffectsInInventory statusEffectsDisplay;
     private final boolean operatorTabEnabled;
     private final List<net.neoforged.neoforge.client.gui.CreativeTabsScreenPage> pages = new java.util.ArrayList<>();
     private net.neoforged.neoforge.client.gui.CreativeTabsScreenPage currentPage = new net.neoforged.neoforge.client.gui.CreativeTabsScreenPage(new java.util.ArrayList<>());
@@ -114,6 +114,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         this.imageWidth = 195;
         this.operatorTabEnabled = operatorTabEnabled;
         INVENTORY = this.menu.INVENTORY;
+        this.statusEffectsDisplay = new EffectsInInventory(this);
     }
 
     private boolean shouldShowOperatorTab(Player player) {
@@ -196,140 +197,146 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
 
         boolean bl = actionType == ClickType.QUICK_MOVE;
         actionType = slotId == -999 && actionType == ClickType.PICKUP ? ClickType.THROW : actionType; // If pickup action, then throw
-        ItemStack itemStack;
-        if (slot == null && selectedTab.getType() != CreativeModeTab.Type.INVENTORY && actionType != ClickType.QUICK_CRAFT) { // click outside inventory
-            if (!((JourneyScreenHandler) this.menu).getCarried().isEmpty() && this.lastClickOutsideBounds) {
-                if (button == 0) {
-                    this.minecraft.player.drop(((JourneyScreenHandler) this.menu).getCarried(), true);
-                    JourneyClientNetworking.dropJourneyStack(((JourneyScreenHandler) this.menu).getCarried(), this.minecraft.player);
-                    ((JourneyScreenHandler) this.menu).setCarried(ItemStack.EMPTY);
-                }
-
-                if (button == 1) {
-                    itemStack = ((JourneyScreenHandler) this.menu).getCarried().split(1);
-                    this.minecraft.player.drop(itemStack, true);
-                    JourneyClientNetworking.dropJourneyStack(itemStack, this.minecraft.player);
-                }
-            }
-        } else {
-            if (slot != null && !slot.mayPickup(this.minecraft.player)) {
-                return;
-            }
-
-            if (slot == this.deleteItemSlot && bl && this.deleteItemSlot.hasItem()) { // shift click delete item slot
-                ItemStack tcStack = this.deleteItemSlot.getItem();
-                boolean ret = this.menu.insertItemTrashcan(tcStack, 9, 46, false);
-                if(ret) {
-                    for (int k = 9; k < 45; ++k) {
-                        Slot s = ((JourneyScreenHandler) this.menu).getSlot(k);
-                        JourneyClientNetworking.clickJourneyStack(s.getItem(), ((JourneySlot) s).slot.index);
+        if (actionType != ClickType.THROW || this.minecraft.player.canDropItems()) {
+            this.onMouseClickAction(slot, actionType);
+            ItemStack itemStack;
+            if (slot == null && selectedTab.getType() != CreativeModeTab.Type.INVENTORY && actionType != ClickType.QUICK_CRAFT) { // click outside inventory
+                if (!((JourneyScreenHandler) this.menu).getCarried().isEmpty() && this.lastClickOutsideBounds) {
+                    if (!this.minecraft.player.canDropItems()) {
+                        return;
                     }
-                    JourneyClientNetworking.sendTrashcanUpdate(tcStack);
-                }
-            } else {
-                ItemStack itemStack2;
-                if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) { // player inventory visible
-                    if (slot == this.deleteItemSlot) { // click delete item slot
-                        ItemStack cursorStack = this.menu.getCarried().copy();
-                        if (cursorStack.isEmpty() && this.deleteItemSlot.hasItem()) {
-                            itemStack2 = this.deleteItemSlot.getItem();
-                            ((JourneyScreenHandler) this.menu).setCarried(itemStack2);
-                            JourneyClientNetworking.sendTrashcanUpdate(ItemStack.EMPTY);
-                        } else {
-                            JourneyClientNetworking.sendTrashcanUpdate(cursorStack);
-                            ((JourneyScreenHandler) this.menu).setCarried(ItemStack.EMPTY);
-                        }
-                    } else if (bl && slot != null && slot.hasItem()) { // shift click slot.
-                        itemStack2 = slot.getItem();
-                        JourneyClientNetworking.sendTrashcanUpdate(itemStack2);
-                        slot.setByPlayer(ItemStack.EMPTY);
-                        JourneyClientNetworking.clickJourneyStack(ItemStack.EMPTY, ((JourneySlot) slot).slot.index);
-                    } else if (actionType == ClickType.THROW && slot != null && slot.hasItem()) {
-                        itemStack = slot.remove(button == 0 ? 1 : slot.getItem().getMaxStackSize());
-                        itemStack2 = slot.getItem();
-                        this.minecraft.player.drop(itemStack, true);
-                        JourneyClientNetworking.dropJourneyStack(itemStack, this.minecraft.player);
-                        JourneyClientNetworking.clickJourneyStack(itemStack2, ((JourneySlot) slot).slot.index);
-                    } else if (actionType == ClickType.THROW && slotId == -999 && !((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
+                    if (button == 0) {
                         this.minecraft.player.drop(((JourneyScreenHandler) this.menu).getCarried(), true);
                         JourneyClientNetworking.dropJourneyStack(((JourneyScreenHandler) this.menu).getCarried(), this.minecraft.player);
                         ((JourneyScreenHandler) this.menu).setCarried(ItemStack.EMPTY);
-                    } else {
-                        this.minecraft.player.inventoryMenu.clicked(slot == null ? slotId : ((JourneySlot) slot).slot.index, button, actionType, this.minecraft.player);
                     }
-                    for (int k = 9; k < 45; ++k) {
-                        Slot s = ((JourneyScreenHandler) this.menu).getSlot(k);
-                        JourneyClientNetworking.clickJourneyStack(s.getItem(), ((JourneySlot) s).slot.index);
+
+                    if (button == 1) {
+                        itemStack = ((JourneyScreenHandler) this.menu).getCarried().split(1);
+                        this.minecraft.player.drop(itemStack, true);
+                        JourneyClientNetworking.dropJourneyStack(itemStack, this.minecraft.player);
+                    }
+                }
+            } else {
+                if (slot != null && !slot.mayPickup(this.minecraft.player)) {
+                    return;
+                }
+
+                if (slot == this.deleteItemSlot && bl && this.deleteItemSlot.hasItem()) { // shift click delete item slot
+                    ItemStack tcStack = this.deleteItemSlot.getItem();
+                    boolean ret = this.menu.insertItemTrashcan(tcStack, 9, 46, false);
+                    if(ret) {
+                        for (int k = 9; k < 45; ++k) {
+                            Slot s = ((JourneyScreenHandler) this.menu).getSlot(k);
+                            JourneyClientNetworking.clickJourneyStack(s.getItem(), ((JourneySlot) s).slot.index);
+                        }
+                        JourneyClientNetworking.sendTrashcanUpdate(tcStack);
                     }
                 } else {
-                    ItemStack itemStack3;
-                    if (actionType != ClickType.QUICK_CRAFT && slot.container == INVENTORY) {
-                        itemStack = ((JourneyScreenHandler) this.menu).getCarried();
-                        itemStack2 = slot.getItem();
-                        if (actionType == ClickType.SWAP) {
-                            if (!itemStack2.isEmpty() && this.minecraft.player.getInventory().getItem(button).isEmpty()) {
-                                this.minecraft.player.getInventory().setItem(button, itemStack2.copyWithCount(itemStack2.getMaxStackSize()));
+                    ItemStack itemStack2;
+                    if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) { // player inventory visible
+                        if (slot == this.deleteItemSlot) { // click delete item slot
+                            ItemStack cursorStack = this.menu.getCarried().copy();
+                            if (cursorStack.isEmpty() && this.deleteItemSlot.hasItem()) {
+                                itemStack2 = this.deleteItemSlot.getItem();
+                                ((JourneyScreenHandler) this.menu).setCarried(itemStack2);
+                                JourneyClientNetworking.sendTrashcanUpdate(ItemStack.EMPTY);
+                            } else {
+                                JourneyClientNetworking.sendTrashcanUpdate(cursorStack);
+                                ((JourneyScreenHandler) this.menu).setCarried(ItemStack.EMPTY);
+                            }
+                        } else if (bl && slot != null && slot.hasItem()) { // shift click slot.
+                            itemStack2 = slot.getItem();
+                            JourneyClientNetworking.sendTrashcanUpdate(itemStack2);
+                            slot.setByPlayer(ItemStack.EMPTY);
+                            JourneyClientNetworking.clickJourneyStack(ItemStack.EMPTY, ((JourneySlot) slot).slot.index);
+                        } else if (actionType == ClickType.THROW && slot != null && slot.hasItem()) {
+                            itemStack = slot.remove(button == 0 ? 1 : slot.getItem().getMaxStackSize());
+                            itemStack2 = slot.getItem();
+                            this.minecraft.player.drop(itemStack, true);
+                            JourneyClientNetworking.dropJourneyStack(itemStack, this.minecraft.player);
+                            JourneyClientNetworking.clickJourneyStack(itemStack2, ((JourneySlot) slot).slot.index);
+                        } else if (actionType == ClickType.THROW && slotId == -999 && !((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
+                            this.minecraft.player.drop(((JourneyScreenHandler) this.menu).getCarried(), true);
+                            JourneyClientNetworking.dropJourneyStack(((JourneyScreenHandler) this.menu).getCarried(), this.minecraft.player);
+                            ((JourneyScreenHandler) this.menu).setCarried(ItemStack.EMPTY);
+                        } else {
+                            this.minecraft.player.inventoryMenu.clicked(slot == null ? slotId : ((JourneySlot) slot).slot.index, button, actionType, this.minecraft.player);
+                        }
+                        for (int k = 9; k < 45; ++k) {
+                            Slot s = ((JourneyScreenHandler) this.menu).getSlot(k);
+                            JourneyClientNetworking.clickJourneyStack(s.getItem(), ((JourneySlot) s).slot.index);
+                        }
+                    } else {
+                        ItemStack itemStack3;
+                        if (actionType != ClickType.QUICK_CRAFT && slot.container == INVENTORY) {
+                            itemStack = ((JourneyScreenHandler) this.menu).getCarried();
+                            itemStack2 = slot.getItem();
+                            if (actionType == ClickType.SWAP) {
+                                if (!itemStack2.isEmpty() && this.minecraft.player.getInventory().getItem(button).isEmpty()) {
+                                    this.minecraft.player.getInventory().setItem(button, itemStack2.copyWithCount(itemStack2.getMaxStackSize()));
+                                    this.minecraft.player.inventoryMenu.broadcastChanges();
+                                }
+
+                                return;
+                            }
+
+                            if (actionType == ClickType.CLONE) {
+                                if (((JourneyScreenHandler) this.menu).getCarried().isEmpty() && slot.hasItem()) {
+                                    itemStack3 = slot.getItem();
+                                    ((JourneyScreenHandler) this.menu).setCarried(itemStack3.copyWithCount(itemStack3.getMaxStackSize()));
+                                }
+
+                                return;
+                            }
+
+                            if (actionType == ClickType.THROW) {
+                                if (!itemStack2.isEmpty()) {
+                                    itemStack3 = itemStack2.copyWithCount(button == 0 ? 1 : itemStack2.getMaxStackSize());
+                                    this.minecraft.player.drop(itemStack3, true);
+                                    JourneyClientNetworking.dropJourneyStack(itemStack3, this.minecraft.player);
+                                }
+
+                                return;
+                            }
+
+                            if (!itemStack.isEmpty() && !itemStack2.isEmpty() && ItemStack.isSameItemSameComponents(itemStack, itemStack2)) {
+                                if (button == 0) {
+                                    if (bl) {
+                                        itemStack.setCount(itemStack.getMaxStackSize());
+                                    } else if (itemStack.getCount() < itemStack.getMaxStackSize()) {
+                                        itemStack.grow(1);
+                                    }
+                                } else {
+                                    itemStack.shrink(1);
+                                }
+                            } else if (!itemStack2.isEmpty() && itemStack.isEmpty()) {
+                                int j = bl ? itemStack2.getMaxStackSize() : itemStack2.getCount();
+                                ((JourneyScreenHandler) this.menu).setCarried(itemStack2.copyWithCount(j));
+                            } else if (button == 0) {
+                                ((JourneyScreenHandler) this.menu).setCarried(ItemStack.EMPTY);
+                            } else if (!((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
+                                ((JourneyScreenHandler) this.menu).getCarried().shrink(1);
+                            }
+                        } else if (this.menu != null) {
+                            itemStack = slot == null ? ItemStack.EMPTY : ((JourneyScreenHandler) this.menu).getSlot(slot.index).getItem();
+                            ((JourneyScreenHandler) this.menu).clicked(slot == null ? slotId : slot.index, button, actionType, this.minecraft.player);
+                            int k;
+                            if (AbstractContainerMenu.getQuickcraftHeader(button) == 2) {
+                                for (k = 0; k < 9; ++k) {
+                                    JourneyClientNetworking.clickJourneyStack(((JourneyScreenHandler) this.menu).getSlot(45 + k).getItem(), 36 + k);
+                                }
+                            } else if (slot != null && Inventory.isHotbarSlot(slot.getContainerSlot()) && selectedTab.getType() != CreativeModeTab.Type.INVENTORY) {
+                                if (actionType == ClickType.THROW && !itemStack.isEmpty() && !((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
+                                    k = button == 0 ? 1 : itemStack.getCount();
+                                    itemStack3 = itemStack.copyWithCount(k);
+                                    itemStack.shrink(k);
+                                    this.minecraft.player.drop(itemStack3, true);
+                                    JourneyClientNetworking.dropJourneyStack(itemStack3, this.minecraft.player);
+                                }
+
                                 this.minecraft.player.inventoryMenu.broadcastChanges();
                             }
-
-                            return;
-                        }
-
-                        if (actionType == ClickType.CLONE) {
-                            if (((JourneyScreenHandler) this.menu).getCarried().isEmpty() && slot.hasItem()) {
-                                itemStack3 = slot.getItem();
-                                ((JourneyScreenHandler) this.menu).setCarried(itemStack3.copyWithCount(itemStack3.getMaxStackSize()));
-                            }
-
-                            return;
-                        }
-
-                        if (actionType == ClickType.THROW) {
-                            if (!itemStack2.isEmpty()) {
-                                itemStack3 = itemStack2.copyWithCount(button == 0 ? 1 : itemStack2.getMaxStackSize());
-                                this.minecraft.player.drop(itemStack3, true);
-                                JourneyClientNetworking.dropJourneyStack(itemStack3, this.minecraft.player);
-                            }
-
-                            return;
-                        }
-
-                        if (!itemStack.isEmpty() && !itemStack2.isEmpty() && ItemStack.isSameItemSameComponents(itemStack, itemStack2)) {
-                            if (button == 0) {
-                                if (bl) {
-                                    itemStack.setCount(itemStack.getMaxStackSize());
-                                } else if (itemStack.getCount() < itemStack.getMaxStackSize()) {
-                                    itemStack.grow(1);
-                                }
-                            } else {
-                                itemStack.shrink(1);
-                            }
-                        } else if (!itemStack2.isEmpty() && itemStack.isEmpty()) {
-                            int j = bl ? itemStack2.getMaxStackSize() : itemStack2.getCount();
-                            ((JourneyScreenHandler) this.menu).setCarried(itemStack2.copyWithCount(j));
-                        } else if (button == 0) {
-                            ((JourneyScreenHandler) this.menu).setCarried(ItemStack.EMPTY);
-                        } else if (!((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
-                            ((JourneyScreenHandler) this.menu).getCarried().shrink(1);
-                        }
-                    } else if (this.menu != null) {
-                        itemStack = slot == null ? ItemStack.EMPTY : ((JourneyScreenHandler) this.menu).getSlot(slot.index).getItem();
-                        ((JourneyScreenHandler) this.menu).clicked(slot == null ? slotId : slot.index, button, actionType, this.minecraft.player);
-                        int k;
-                        if (AbstractContainerMenu.getQuickcraftHeader(button) == 2) {
-                            for (k = 0; k < 9; ++k) {
-                                JourneyClientNetworking.clickJourneyStack(((JourneyScreenHandler) this.menu).getSlot(45 + k).getItem(), 36 + k);
-                            }
-                        } else if (slot != null && Inventory.isHotbarSlot(slot.getContainerSlot()) && selectedTab.getType() != CreativeModeTab.Type.INVENTORY) {
-                            if (actionType == ClickType.THROW && !itemStack.isEmpty() && !((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
-                                k = button == 0 ? 1 : itemStack.getCount();
-                                itemStack3 = itemStack.copyWithCount(k);
-                                itemStack.shrink(k);
-                                this.minecraft.player.drop(itemStack3, true);
-                                JourneyClientNetworking.dropJourneyStack(itemStack3, this.minecraft.player);
-                            }
-
-                            this.minecraft.player.inventoryMenu.broadcastChanges();
                         }
                     }
                 }
@@ -528,7 +535,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             };
         }
 
-        Stream var10000 = BuiltInRegistries.ITEM.getTagNames().filter((tag) -> {
+        Stream var10000 = BuiltInRegistries.ITEM.getTags().map(HolderSet.Named::key).filter((tag) -> {
             return predicate.test(tag.location());
         });
         Set var10001 = this.searchResultTags;
@@ -726,6 +733,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         super.render(context, mouseX, mouseY, deltaTicks);
+        this.statusEffectsDisplay.render(context, mouseX, mouseY, deltaTicks);
 
         if (this.deleteItemSlot != null &&
                 selectedTab.getType() == CreativeModeTab.Type.INVENTORY &&
@@ -753,6 +761,10 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         this.renderTooltip(context, mouseX, mouseY);
+    }
+
+    public boolean showsActiveEffects() {
+        return this.statusEffectsDisplay.canSeeEffects();
     }
 
     public List<Component> getTooltipFromContainerItem(ItemStack stack) {
@@ -803,9 +815,9 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
 
         if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-            context.blit(JourneyInventoryScreen.JOURNEY_INVENTORY_TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+            context.blit(RenderType::guiTextured, JourneyInventoryScreen.JOURNEY_INVENTORY_TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
         } else {
-            context.blit(selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+            context.blit(RenderType::guiTextured, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
         }
         this.searchBox.render(context, mouseX, mouseY, deltaTicks);
         int i = this.leftPos + 175;
@@ -813,7 +825,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         int k = j + 112;
         if (selectedTab.canScroll()) {
             ResourceLocation identifier = this.hasScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-            context.blitSprite(identifier, i, j + (int)((float)(k - j - 17) * this.scrollPosition), 12, 15);
+            context.blitSprite(RenderType::guiTextured, identifier, i, j + (int)((float)(k - j - 17) * this.scrollPosition), 12, 15);
         }
 
         if (currentPage.getVisibleTabs().contains(selectedTab)) {
@@ -875,7 +887,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             identifiers = bl ? TAB_BOTTOM_SELECTED_TEXTURES : TAB_BOTTOM_UNSELECTED_TEXTURES;
         }
 
-        context.blitSprite(identifiers[Mth.clamp(i, 0, identifiers.length)], j, k, 26, 32);
+        context.blitSprite(RenderType::guiTextured, identifiers[Mth.clamp(i, 0, identifiers.length)], j, k, 26, 32);
         context.pose().pushPose();
         context.pose().translate(0.0F, 0.0F, 100.0F);
         j += 5;

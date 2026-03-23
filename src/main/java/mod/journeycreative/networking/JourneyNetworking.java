@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.TickThrottler;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -49,7 +50,7 @@ public class JourneyNetworking {
     public static final ResourceLocation SEND_ITEM_WARNING_MESSAGE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "send_item_warning_message");
 
     static final Logger LOGGER = LogUtils.getLogger();
-    private static final Map<UUID, Integer> playerCreativeItemDropCooldowns = new HashMap<>();
+    private static final Map<UUID, TickThrottler> playerCreativeItemDropCooldowns = new HashMap<>();
 
     @SubscribeEvent
     public static void registerServerPackets(RegisterPayloadHandlersEvent event) {
@@ -99,12 +100,7 @@ public class JourneyNetworking {
 
     @SubscribeEvent
     public static void tick(ServerTickEvent.Post event) {
-        playerCreativeItemDropCooldowns.entrySet().removeIf(entry -> {
-            int remaining = entry.getValue() - 1;
-            if (remaining <= 0) return true;
-            entry.setValue(remaining);
-            return false;
-        });
+        playerCreativeItemDropCooldowns.values().forEach(TickThrottler::tick);
     }
 
     private static void giveItemPacket(GiveItemPayload payload, IPayloadContext context){
@@ -119,16 +115,16 @@ public class JourneyNetworking {
 
         context.enqueueWork(() -> {
             UUID uuid = player.getUUID();
-            playerCreativeItemDropCooldowns.putIfAbsent(uuid, 20);
-            int cooldown = playerCreativeItemDropCooldowns.get(uuid);
+            playerCreativeItemDropCooldowns.putIfAbsent(uuid, new TickThrottler(20, 1480));
+            TickThrottler cooldown = playerCreativeItemDropCooldowns.get(uuid);
 
             if (bl2 && bl3) {
                 player.inventoryMenu.getSlot(slot).setByPlayer(stack);
                 player.inventoryMenu.broadcastChanges();
             } else if (bl && bl3) {
-                if (cooldown < 1480) {
+                if (cooldown.isUnderThreshold()) {
+                    cooldown.increment();
                     player.drop(stack, true);
-                    playerCreativeItemDropCooldowns.put(uuid, cooldown + 20);
                 } else {
                     LOGGER.warn("Player {} was dropping items too fast in journey mode, ignoring.", player.getName().getString());
                 }
@@ -186,9 +182,9 @@ public class JourneyNetworking {
         PlayerUnlocksData playerState = StateSaverAndLoader.getPlayerState(player);
 
         if (playerState.unlockItem(unlockStack)) {
-            player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.unlocked", unlockStack.getItem().getDescription()), true);
+            player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.unlocked", unlockStack.getItem().getName()), true);
         } else {
-            player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.already_unlocked", unlockStack.getItem().getDescription()), true);
+            player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.already_unlocked", unlockStack.getItem().getName()), true);
         }
 
         source.getServer().execute(() -> {

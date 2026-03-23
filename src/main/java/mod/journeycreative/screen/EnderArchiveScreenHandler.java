@@ -15,6 +15,7 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -42,7 +43,7 @@ public class EnderArchiveScreenHandler extends ItemCombinerMenu {
     }
 
     private EnderArchiveScreenHandler(int syncId, Inventory playerInventory, ContainerLevelAccess context, Level world) {
-        super(ModScreens.ENDER_ARCHIVE_SCREEN_HANDLER.get(), syncId, playerInventory, context);
+        super(ModScreens.ENDER_ARCHIVE_SCREEN_HANDLER.get(), syncId, playerInventory, context,createForgingSlotsManager(world.recipeAccess()) );
         this.invalidRecipe = DataSlot.standalone();
         this.reason = DataSlot.standalone();
         this.world = world;
@@ -50,17 +51,10 @@ public class EnderArchiveScreenHandler extends ItemCombinerMenu {
         this.addDataSlot(this.reason).set(0);
     }
 
-    @Override
-    protected ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
-        return ItemCombinerMenuSlotDefinition.create()
-                .withSlot(0, 53, 33, stack -> stack.getItem() instanceof BlockItem bi && bi.getBlock() == ModBlocks.RESEARCH_VESSEL_BLOCK.get())
-                .withResultSlot(1, 107, 33)
-                .build();
-    }
-
-    @Override
-    protected boolean mayPickup(Player player, boolean present) {
-        return present && this.reason.get() == researchInvalidReason.VALID.ordinal();
+    private static ItemCombinerMenuSlotDefinition createForgingSlotsManager(RecipeAccess recipeManager) {
+        ItemCombinerMenuSlotDefinition.Builder builder = ItemCombinerMenuSlotDefinition.create();
+        builder = builder.withSlot(0, 53, 33, EnderArchiveScreenHandler::canUseSlot);
+        return builder.withResultSlot(1, 107, 33).build();
     }
 
     protected boolean isValidBlock(BlockState state) {

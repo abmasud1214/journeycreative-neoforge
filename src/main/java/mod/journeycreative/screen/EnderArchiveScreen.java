@@ -4,6 +4,7 @@ import mod.journeycreative.JourneyCreative;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.CyclingSlotBackground;
 import net.minecraft.client.gui.screens.inventory.ItemCombinerScreen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,7 +36,7 @@ public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHan
 
     @Override
     protected void renderBg(GuiGraphics context, float deltaTicks, int mouseX, int mouseY) {
-        context.blit(this.texture, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        context.blit(RenderType::guiTextured, this.texture, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
         this.researchCertificateSlotIcon.render(this.menu, context, deltaTicks, this.leftPos, this.topPos);
         this.researchVesselSlotIcon.render(this.menu, context, deltaTicks, this.leftPos, this.topPos);
         this.renderErrorIcon(context, this.leftPos, this.topPos);
@@ -50,7 +51,7 @@ public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHan
     @Override
     protected void renderErrorIcon(GuiGraphics context, int x, int y) {
         if (this.getMenu().hasInvalidRecipe()) {
-            context.blitSprite(ERROR_TEXTURE, this.leftPos + 74,this.topPos + 31, 28, 21);
+            context.blitSprite(RenderType::guiTextured, ERROR_TEXTURE, this.leftPos + 74,this.topPos + 31, 28, 21);
         }
     }
 

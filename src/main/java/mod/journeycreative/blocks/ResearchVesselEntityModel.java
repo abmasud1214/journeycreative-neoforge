@@ -1,22 +1,19 @@
 package mod.journeycreative.blocks;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.Model;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.client.renderer.RenderType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class ResearchVesselEntityModel extends Model {
+public class ResearchVesselEntityModel extends EntityModel<ResearchVesselEntityRenderState> {
     private final ModelPart Bottom;
     private final ModelPart Top;
 
     public ResearchVesselEntityModel(ModelPart root) {
-        super(RenderType::entityCutout);
+        super(root);
         this.Bottom = root.getChild("Bottom");
         this.Top = root.getChild("Top");
     }
@@ -48,8 +45,10 @@ public class ResearchVesselEntityModel extends Model {
     }
 
     @Override
-    public void renderToBuffer(PoseStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
-        this.Bottom.render(matrices, vertices, light, overlay, color);
-        this.Top.render(matrices, vertices, light, overlay, color);
+    public void setupAnim(ResearchVesselEntityRenderState researchVesselEntityRenderState) {
+        super.setupAnim(researchVesselEntityRenderState);
+
+        float f = (researchVesselEntityRenderState.openProgress * 11.0F) + 5.0F;
+        this.Top.setPos(0, f, 0);
     }
 }

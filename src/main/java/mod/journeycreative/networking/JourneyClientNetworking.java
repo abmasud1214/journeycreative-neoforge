@@ -31,6 +31,7 @@ public class JourneyClientNetworking {
     public static void dropJourneyStack(ItemStack stack, LocalPlayer player) {
         if (!stack.isEmpty()) {
             sendGiveItem(-1, stack);
+            player.getDropSpamThrottler().increment();
         }
     }
 

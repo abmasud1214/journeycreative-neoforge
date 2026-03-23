@@ -18,8 +18,8 @@ public class EnderArchiveBlockItem extends BlockItem {
 
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag type) {
         tooltip.add(Component.translatable("item.journeycreative.ender_archive.tooptip",
-                BuiltInRegistries.ITEM.get(ResourceLocation.parse("journeycreative:research_vessel")).getDescription(),
-                BuiltInRegistries.ITEM.get(ResourceLocation.parse("journeycreative:research_certificate")).getDescription()
+                BuiltInRegistries.ITEM.getValue(ResourceLocation.parse("journeycreative:research_vessel")).getName(),
+                BuiltInRegistries.ITEM.getValue(ResourceLocation.parse("journeycreative:research_certificate")).getName()
         ).withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY));
     }
 }
