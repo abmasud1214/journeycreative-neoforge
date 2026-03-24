@@ -11,7 +11,7 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -26,8 +26,8 @@ public class ResearchConfig {
     public static Set<ResourceLocation> RESEARCH_BLOCKED = new HashSet<>();
 
     @SubscribeEvent
-    public static void onAddReloadListener(AddReloadListenerEvent event) {
-        event.addListener(new ResearchLoader());
+    public static void onAddReloadListener(AddServerReloadListenersEvent event) {
+        event.addListener(ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "research_loader"), new ResearchLoader());
     }
 
     private static class ResearchLoader extends SimplePreparableReloadListener<ResearchData> {

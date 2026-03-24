@@ -1193,7 +1193,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
 
         @Nullable
-        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+        public ResourceLocation getNoItemIcon() {
             return this.slot.getNoItemIcon();
         }
 

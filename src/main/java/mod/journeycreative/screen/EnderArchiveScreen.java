@@ -15,8 +15,8 @@ import java.util.Optional;
 public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHandler> {
     private static final ResourceLocation ERROR_TEXTURE = ResourceLocation.withDefaultNamespace("container/smithing/error");
     private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/ender_archive.png");
-    private static final ResourceLocation EMPTY_SLOT_RESEARCH_VESSEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "item/empty_slot_research_vessel");
-    private static final ResourceLocation EMPTY_SLOT_RESEARCH_CERTIFICATE_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "item/empty_slot_research_certificate");
+    private static final ResourceLocation EMPTY_SLOT_RESEARCH_VESSEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "container/slot/empty_slot_research_vessel");
+    private static final ResourceLocation EMPTY_SLOT_RESEARCH_CERTIFICATE_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "container/slot/empty_slot_research_certificate");
     private final CyclingSlotBackground researchVesselSlotIcon = new CyclingSlotBackground(0);
     private final CyclingSlotBackground researchCertificateSlotIcon = new CyclingSlotBackground(1);
     private static final Component RESEARCH_BLOCKED_TOOLTIP = Component.translatable("container.ender_archive.research_blocked_tooltip");
