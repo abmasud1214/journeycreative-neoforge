@@ -29,6 +29,8 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -64,24 +66,24 @@ public class ResearchVesselBlockEntity extends RandomizableContainerBlockEntity 
     }
 
     @Override
-    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-        super.loadAdditional(nbt, registries);
-        this.readInventoryNbt(nbt, registries);
+    protected void loadAdditional(ValueInput view) {
+        super.loadAdditional(view);
+        this.readInventoryNbt(view);
     }
 
     public int getContainerSize() {
         return this.inventory.size();
     }
 
-    public void readInventoryNbt(CompoundTag nbt, HolderLookup.Provider registries) {
+    public void readInventoryNbt(ValueInput view) {
         this.inventory = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(nbt, this.inventory, registries);
+        ContainerHelper.loadAllItems(view, this.inventory);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-        super.saveAdditional(nbt, registries);
-        ContainerHelper.saveAllItems(nbt, this.inventory, registries);
+    protected void saveAdditional(ValueOutput view) {
+        super.saveAdditional(view);
+        ContainerHelper.saveAllItems(view, this.inventory, false);
     }
 
     protected Component getDefaultName() {
@@ -349,8 +351,8 @@ public class ResearchVesselBlockEntity extends RandomizableContainerBlockEntity 
     }
 
     @Override
-    public void removeComponentsFromTag(CompoundTag nbt) {
-        nbt.remove("target");
+    public void removeComponentsFromTag(ValueOutput view) {
+        view.discard("target");
     }
 
     public static enum AnimationStage {

@@ -4,6 +4,10 @@ import mod.journeycreative.JourneyCreative;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.CyclingSlotBackground;
 import net.minecraft.client.gui.screens.inventory.ItemCombinerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -13,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHandler> {
+    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("tooltip/background");
     private static final ResourceLocation ERROR_TEXTURE = ResourceLocation.withDefaultNamespace("container/smithing/error");
     private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/ender_archive.png");
     private static final ResourceLocation EMPTY_SLOT_RESEARCH_VESSEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "container/slot/empty_slot_research_vessel");
@@ -36,7 +41,7 @@ public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHan
 
     @Override
     protected void renderBg(GuiGraphics context, float deltaTicks, int mouseX, int mouseY) {
-        context.blit(RenderType::guiTextured, this.texture, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        context.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
         this.researchCertificateSlotIcon.render(this.menu, context, deltaTicks, this.leftPos, this.topPos);
         this.researchVesselSlotIcon.render(this.menu, context, deltaTicks, this.leftPos, this.topPos);
         this.renderErrorIcon(context, this.leftPos, this.topPos);
@@ -51,7 +56,7 @@ public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHan
     @Override
     protected void renderErrorIcon(GuiGraphics context, int x, int y) {
         if (this.getMenu().hasInvalidRecipe()) {
-            context.blitSprite(RenderType::guiTextured, ERROR_TEXTURE, this.leftPos + 74,this.topPos + 31, 28, 21);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ERROR_TEXTURE, this.leftPos + 74,this.topPos + 31, 28, 21);
         }
     }
 
@@ -69,7 +74,16 @@ public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHan
         }
 
         optional.ifPresent((text) -> {
-            context.renderTooltip(this.font, this.font.split(text, 115), mouseX, mouseY);
+            var lines = this.font.split(text, 115);
+
+            List<ClientTooltipComponent> components = lines.stream()
+                            .map(ClientTooltipComponent::create)
+                                    .toList();
+
+            context.renderTooltip(this.font,
+                    components, mouseX, mouseY,
+                    DefaultTooltipPositioner.INSTANCE,
+                    null);
         });
     }
 }

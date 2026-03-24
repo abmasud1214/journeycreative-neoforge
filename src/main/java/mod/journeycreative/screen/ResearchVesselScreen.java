@@ -3,14 +3,19 @@ package mod.journeycreative.screen;
 import mod.journeycreative.JourneyCreative;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.player.Inventory;
+
+import java.util.List;
 import java.util.Optional;
 
 public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVesselScreenHandler> {
-
     private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/shulker_box.png");
     private static final ResourceLocation INVALID_RESEARCH_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/sprites/invalid_research.png");
     private static final ResourceLocation WARNING_RESEARCH_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/sprites/prereq_research.png");
@@ -26,7 +31,7 @@ public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVessel
     protected void renderBg(GuiGraphics context, float deltaTicks, int mouseX, int mouseY) {
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        context.blit(RenderType::guiTextured, TEXTURE, i, j, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     @Override
@@ -57,7 +62,7 @@ public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVessel
                 x -= 7;
             }
 
-            context.drawString(this.font, text, x, this.topPos + 6, -12566464, false);
+            context.drawString(this.font, text, x, this.topPos + 6, CommonColors.DARK_GRAY, false);
         });
     }
     private void renderInvalid(GuiGraphics context) {
@@ -68,11 +73,11 @@ public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVessel
         boolean bl2 = warning != null && !warning.getString().isEmpty();
         if (!(handler.getInventoryCapacity() == 0) && (bl || bl2)) {
             if (bl) {
-                context.blit(RenderType::guiTextured, INVALID_RESEARCH_TEXTURE,
+                context.blit(RenderPipelines.GUI_TEXTURED, INVALID_RESEARCH_TEXTURE,
                         this.leftPos + 157, this.topPos + 5, 0, 0,
                         11, 11, 11, 11);
             } else {
-                context.blit(RenderType::guiTextured, WARNING_RESEARCH_TEXTURE,
+                context.blit(RenderPipelines.GUI_TEXTURED, WARNING_RESEARCH_TEXTURE,
                         this.leftPos + 161, this.topPos + 5, 0, 0,
                         11, 11, 11, 11);
             }
@@ -99,7 +104,16 @@ public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVessel
         }
 
         optional.ifPresent((text) -> {
-            context.renderTooltip(this.font, this.font.split(text, 115), mouseX, mouseY);
+            var lines = this.font.split(text, 115);
+
+            List<ClientTooltipComponent> components = lines.stream()
+                    .map(ClientTooltipComponent::create)
+                    .toList();
+
+            context.renderTooltip(this.font,
+                    components, mouseX, mouseY,
+                    DefaultTooltipPositioner.INSTANCE,
+                    null);
         });
     }
 

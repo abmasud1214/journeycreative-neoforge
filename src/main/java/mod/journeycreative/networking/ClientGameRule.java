@@ -1,9 +1,8 @@
 package mod.journeycreative.networking;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
+
+
 public class ClientGameRule {
     private static boolean researchItemsUnlocked = false;
 

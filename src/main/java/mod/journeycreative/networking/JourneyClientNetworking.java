@@ -9,10 +9,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -21,7 +21,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 @EventBusSubscriber(modid = JourneyCreative.MODID)
 public class JourneyClientNetworking {
     public static void sendGiveItem(int slot, ItemStack stack) {
-        PacketDistributor.sendToServer(new JourneyNetworking.GiveItemPayload(slot, stack.copy()));
+        ClientPacketDistributor.sendToServer(new JourneyNetworking.GiveItemPayload(slot, stack.copy()));
     }
 
     public static void clickJourneyStack(ItemStack stack, int slot) {
@@ -36,7 +36,7 @@ public class JourneyClientNetworking {
     }
 
     public static void sendTrashcanUpdate(ItemStack stack) {
-        PacketDistributor.sendToServer(new JourneyNetworking.TrashCanPayload(stack));
+        ClientPacketDistributor.sendToServer(new JourneyNetworking.TrashCanPayload(stack));
     }
 
     @SubscribeEvent

@@ -26,7 +26,9 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
@@ -52,8 +54,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackLinkedSet;
 import net.minecraft.world.item.TooltipFlag;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -68,7 +69,7 @@ import java.util.stream.Stream;
  * All modifications, additions, and custom logic are licensed under the MIT License.
  * Full license text can be found in the LICENSE file at the root of this project.
  */
-@OnlyIn(Dist.CLIENT)
+
 public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInventoryScreen.JourneyScreenHandler> {
     public static final WidgetSprites JOURNEY_BUTTON_TEXTURES = new WidgetSprites(
             ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "journey_button"),
@@ -733,22 +734,20 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         super.render(context, mouseX, mouseY, deltaTicks);
-        this.statusEffectsDisplay.render(context, mouseX, mouseY, deltaTicks);
+        this.statusEffectsDisplay.renderEffects(context, mouseX, mouseY);
+        this.statusEffectsDisplay.renderTooltip(context, mouseX, mouseY);
 
         if (this.deleteItemSlot != null &&
                 selectedTab.getType() == CreativeModeTab.Type.INVENTORY &&
                 this.isHovering(this.deleteItemSlot.x, this.deleteItemSlot.y, 16, 16, (double) mouseX, (double) mouseY)) {
-            context.renderTooltip(this.font, DELETE_ITEM_SLOT_TEXT, mouseX, mouseY);
+            context.setTooltipForNextFrame(this.font, DELETE_ITEM_SLOT_TEXT, mouseX, mouseY);
         }
 
         Iterator var5 = currentPage.getVisibleTabs().iterator();
 
         if (this.pages.size() != 1) {
             Component page = Component.literal(String.format("%d / %d", this.pages.indexOf(this.currentPage) + 1, this.pages.size()));
-            context.pose().pushPose();
-            context.pose().translate(0F, 0F, 300F);
-            context.drawString(font, page.getVisualOrderText(), leftPos + (imageWidth / 2) - (font.width(page) / 2), topPos - 44, -1);
-            context.pose().popPose();
+            context.drawString(this.font, page.getVisualOrderText(), this.leftPos + this.imageWidth / 2 - this.font.width(page) / 2, this.topPos - 44, -1);
         }
 
         while (var5.hasNext()) {
@@ -759,7 +758,6 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             }
         }
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         this.renderTooltip(context, mouseX, mouseY);
     }
 
@@ -815,9 +813,9 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
 
         if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-            context.blit(RenderType::guiTextured, JourneyInventoryScreen.JOURNEY_INVENTORY_TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+            context.blit(RenderPipelines.GUI_TEXTURED, JourneyInventoryScreen.JOURNEY_INVENTORY_TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
         } else {
-            context.blit(RenderType::guiTextured, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+            context.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
         }
         this.searchBox.render(context, mouseX, mouseY, deltaTicks);
         int i = this.leftPos + 175;
@@ -825,7 +823,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         int k = j + 112;
         if (selectedTab.canScroll()) {
             ResourceLocation identifier = this.hasScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-            context.blitSprite(RenderType::guiTextured, identifier, i, j + (int)((float)(k - j - 17) * this.scrollPosition), 12, 15);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, identifier, i, j + (int)((float)(k - j - 17) * this.scrollPosition), 12, 15);
         }
 
         if (currentPage.getVisibleTabs().contains(selectedTab)) {
@@ -867,7 +865,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         int i = this.getTabX(group);
         int j = this.getTabY(group);
         if (this.isHovering(i + 3, j + 3, 21, 27, (double) mouseX, (double) mouseY)) {
-            context.renderTooltip(this.font, group.getDisplayName(), mouseX, mouseY);
+            context.setTooltipForNextFrame(this.font, group.getDisplayName(), mouseX, mouseY);
             return true;
         } else {
             return false;
@@ -875,27 +873,22 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     }
 
     protected void renderTabIcon(GuiGraphics context, CreativeModeTab group) {
-        boolean bl = group == selectedTab;
-        boolean bl2 = group.row() == CreativeModeTab.Row.TOP;
-        int i = group.column();
+        boolean flag = group == selectedTab;
+        boolean flag1 = this.currentPage.isTop(group);
+        int i = this.currentPage.getColumn(group);
         int j = this.leftPos + this.getTabX(group);
-        int k = this.topPos - (bl2 ? 28 : -(this.imageHeight - 4));
-        ResourceLocation[] identifiers;
-        if (bl2) {
-            identifiers = bl ? TAB_TOP_SELECTED_TEXTURES : TAB_TOP_UNSELECTED_TEXTURES;
+        int k = this.topPos - (flag1 ? 28 : -(this.imageHeight - 4));
+        ResourceLocation[] aresourcelocation;
+        if (flag1) {
+            aresourcelocation = flag ? TAB_TOP_SELECTED_TEXTURES : TAB_TOP_UNSELECTED_TEXTURES;
         } else {
-            identifiers = bl ? TAB_BOTTOM_SELECTED_TEXTURES : TAB_BOTTOM_UNSELECTED_TEXTURES;
+            aresourcelocation = flag ? TAB_BOTTOM_SELECTED_TEXTURES : TAB_BOTTOM_UNSELECTED_TEXTURES;
         }
 
-        context.blitSprite(RenderType::guiTextured, identifiers[Mth.clamp(i, 0, identifiers.length)], j, k, 26, 32);
-        context.pose().pushPose();
-        context.pose().translate(0.0F, 0.0F, 100.0F);
-        j += 5;
-        k += 8 + (bl2 ? 1 : -1);
-        ItemStack itemStack = group.getIconItem();
-        context.renderItem(itemStack, j, k);
-        context.renderItemDecorations(this.font, itemStack, j, k);
-        context.pose().popPose();
+        context.blitSprite(RenderPipelines.GUI_TEXTURED, aresourcelocation[Mth.clamp(i, 0, aresourcelocation.length)], j, k, 26, 32);
+        int l = j + 13 - 8;
+        int i1 = k + 16 - 8 + (flag1 ? 1 : -1);
+        context.renderItem(group.getIconItem(), l, i1);
     }
 
     public boolean isInventoryTabSelected() {
@@ -923,7 +916,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             Component text2 = client.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
             Component text3 = Component.translatable("inventory.hotbarSaved", new Object[]{text2, text});
             client.gui.setOverlayMessage(text3, false);
-            client.getNarrator().sayNow(text3);
+            client.getNarrator().saySystemNow(text3);
             hotbarStorage.save();
         }
 
@@ -941,7 +934,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         return this.deleteItemSlot;
     }
 
-    @OnlyIn(Dist.CLIENT)
+    
     public static class JourneyScreenHandler extends AbstractContainerMenu {
         public final NonNullList<ItemStack> itemList = NonNullList.create();
         private final AbstractContainerMenu parent;
@@ -1147,7 +1140,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
 
     }
 
-    @OnlyIn(Dist.CLIENT)
+    
     private static class JourneySlot extends Slot {
         final Slot slot;
 
@@ -1210,7 +1203,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
+    
     static class LockableSlot extends Slot {
         public LockableSlot(Container inventory, int i, int j, int k) {
             super(inventory, i, j, k);
