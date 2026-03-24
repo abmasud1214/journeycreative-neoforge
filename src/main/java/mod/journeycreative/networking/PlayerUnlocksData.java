@@ -70,6 +70,7 @@ public class PlayerUnlocksData {
 
         Set<DataComponentType<?>> keepComponents = Set.of(
                 DataComponents.POTION_CONTENTS,
+                DataComponents.POTION_DURATION_SCALE,
                 DataComponents.STORED_ENCHANTMENTS,
                 DataComponents.INSTRUMENT,
                 DataComponents.FIREWORKS,
@@ -99,26 +100,4 @@ public class PlayerUnlocksData {
                     PlayerUnlocksData::new,
                     PlayerUnlocksData::getUnlockedItemKeys
             );
-
-    public CompoundTag toNbt(HolderLookup.Provider registries) {
-        CompoundTag nbt = new CompoundTag();
-        ListTag list = new ListTag();
-        for (ItemStack stack : unlockedItemKeys) {
-            list.add(stack.save(registries));
-        }
-
-        nbt.put("unlockedItems", list);
-        return nbt;
-    }
-
-    public static PlayerUnlocksData fromNbt(CompoundTag nbt, HolderLookup.Provider registries) {
-        ImmutableSet.Builder<ItemStack> builder = ImmutableSet.builder();
-        ListTag list = nbt.getList("unlockedItems", 10);
-
-        for (int i = 0; i < list.size(); i++) {
-            ItemStack.parse(registries, list.getCompound(i)).ifPresent(builder::add);
-        }
-
-        return new PlayerUnlocksData(builder.build());
-    }
 }

@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -294,7 +295,7 @@ public class ResearchVesselBlockEntity extends RandomizableContainerBlockEntity 
 
     private static void updateNeighborStates(Level world, BlockPos pos, BlockState state) {
         state.updateNeighbourShapes(world, pos, 3);
-        world.blockUpdated(pos, state.getBlock());
+        world.updateNeighborsAt(pos, state.getBlock());
     }
 
     public void startOpen(Player player) {
@@ -323,8 +324,14 @@ public class ResearchVesselBlockEntity extends RandomizableContainerBlockEntity 
         }
     }
 
+    // Override because NeoForge adds an automatic drop all items in container when item removed.
     @Override
-    protected void applyImplicitComponents(DataComponentInput components) {
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentGetter components) {
         super.applyImplicitComponents(components);
         ModComponents.ResearchTarget record = components.get(ModComponents.RESEARCH_VESSEL_TARGET_COMPONENT.get());
         this.target = (record != null) ? record.stack().copy() : ItemStack.EMPTY;

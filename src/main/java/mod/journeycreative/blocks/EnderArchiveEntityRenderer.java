@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -27,7 +28,7 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
     }
 
     @Override
-    public void render(EnderArchiveBlockEntity enderArchiveBlockEntity, float f, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, int j) {
+    public void render(EnderArchiveBlockEntity enderArchiveBlockEntity, float f, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, int j, Vec3 vec3) {
         Direction direction = (Direction) enderArchiveBlockEntity.getBlockState().getValueOrElse(EnderArchiveBlock.FACING, Direction.NORTH);
 
         float[] g = enderArchiveBlockEntity.getBookTransparency(f);

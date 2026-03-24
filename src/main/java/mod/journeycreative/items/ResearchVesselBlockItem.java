@@ -10,9 +10,11 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ResearchVesselBlockItem extends BlockItem {
     public ResearchVesselBlockItem(Block block, Properties settings) {
@@ -20,18 +22,10 @@ public class ResearchVesselBlockItem extends BlockItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag type) {
-        tooltip.removeIf(text -> {
-            if (text.getContents() instanceof TranslatableContents content) {
-                String key = content.getKey();
-                return key.equals("item.container.item_count") || key.equals("item.container.more_items");
-            }
-            return false;
-        });
-
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag type) {
         ItemContainerContents containerComponent = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
         if (containerComponent.copyOne().isEmpty()) {
-            tooltip.add(Component.translatable("item.journeycreative.research_vessel.tooltip").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+            tooltip.accept(Component.translatable("item.journeycreative.research_vessel.tooltip").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         } else {
             ModComponents.ResearchTarget record = stack.getOrDefault(ModComponents.RESEARCH_VESSEL_TARGET_COMPONENT.get(), ModComponents.ResearchTarget.EMPTY);
             ItemStack target = record.stack();
@@ -44,9 +38,9 @@ public class ResearchVesselBlockItem extends BlockItem {
             }
 
             if (quantity < capacity) {
-                tooltip.add(Component.translatable("item.journeycreative.research_vessel.tooltip.status", quantity, capacity, target.getItem().getName()).withStyle(ChatFormatting.YELLOW));
+                tooltip.accept(Component.translatable("item.journeycreative.research_vessel.tooltip.status", quantity, capacity, target.getItem().getName()).withStyle(ChatFormatting.YELLOW));
             } else {
-                tooltip.add(Component.translatable("item.journeycreative.research_vessel.tooltip.status", quantity, capacity, target.getItem().getName()).withStyle(ChatFormatting.GREEN));
+                tooltip.accept(Component.translatable("item.journeycreative.research_vessel.tooltip.status", quantity, capacity, target.getItem().getName()).withStyle(ChatFormatting.GREEN));
             }
         }
     }

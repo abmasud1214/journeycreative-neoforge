@@ -62,7 +62,7 @@ public class EnderArchiveScreenHandler extends ItemCombinerMenu {
     }
 
     protected void onTake(Player player, ItemStack stack) {
-        stack.onCraftedBy(world, player, stack.getCount());
+        stack.onCraftedBy(player, stack.getCount());
         this.decrementStack(0);
         this.access.execute((world, pos) -> {
             world.levelEvent(1044, pos, 0);

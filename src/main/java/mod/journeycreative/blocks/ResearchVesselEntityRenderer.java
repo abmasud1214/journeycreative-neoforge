@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.common.EventBusSubscriber;
 import org.joml.Matrix4f;
 
@@ -28,7 +29,7 @@ public class ResearchVesselEntityRenderer implements BlockEntityRenderer<Researc
     }
 
     @Override
-    public void render(ResearchVesselBlockEntity researchVesselBlockEntity, float f, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, int j) {
+    public void render(ResearchVesselBlockEntity researchVesselBlockEntity, float f, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, int j, Vec3 vec3) {
         Direction direction = Direction.UP;
 
         float g = researchVesselBlockEntity.getAnimationProgress(f);

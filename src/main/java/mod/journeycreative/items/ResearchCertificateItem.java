@@ -19,12 +19,14 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class ResearchCertificateItem extends Item {
     private static final ItemStack barrier = new ItemStack(Items.BARRIER);
@@ -51,11 +53,11 @@ public class ResearchCertificateItem extends Item {
         return item.getName();
     }
 
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag type) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag type) {
         boolean exists = stack.has(ModComponents.RESEARCH_ITEM_COMPONENT);
         if (exists) {
             ItemStack research_item = stack.get(ModComponents.RESEARCH_ITEM_COMPONENT).stack();
-            tooltip.add(Component.translatable("item.journeycreative.research_certificate.research_item", getItemName(research_item)).withStyle(ChatFormatting.GOLD));
+            tooltip.accept(Component.translatable("item.journeycreative.research_certificate.research_item", getItemName(research_item)).withStyle(ChatFormatting.GOLD));
         }
     }
 

@@ -1,12 +1,15 @@
 package mod.journeycreative.networking;
 
+import com.mojang.serialization.Codec;
 import mod.journeycreative.JourneyCreative;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import java.util.HashMap;
 import java.util.UUID;
@@ -17,28 +20,12 @@ public class StateSaverAndLoader extends SavedData {
     private StateSaverAndLoader() {
     }
 
-    @Override
-    public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registries) {
-        CompoundTag playersNbt = new CompoundTag();
-
-        players.forEach(((uuid, playerUnlocksData) -> {
-            playersNbt.put(uuid.toString(), playerUnlocksData.toNbt(registries));
-        }));
-
-        nbt.put("players", playersNbt);
-        return nbt;
+    private StateSaverAndLoader(HashMap<UUID, PlayerUnlocksData> players) {
+        this.players = players;
     }
 
-    public static StateSaverAndLoader createFromNbt(CompoundTag nbt, HolderLookup.Provider registries) {
-        StateSaverAndLoader state = new StateSaverAndLoader();
-        CompoundTag playersNbt = nbt.getCompound("players");
-
-        for (String key : playersNbt.getAllKeys()) {
-            UUID uuid = UUID.fromString(key);
-            PlayerUnlocksData data = PlayerUnlocksData.fromNbt(playersNbt.getCompound(key), registries);
-            state.players.put(uuid, data);
-        }
-        return state;
+    public HashMap<UUID, PlayerUnlocksData> getPlayers() {
+        return players;
     }
 
     public static PlayerUnlocksData getPlayerState(LivingEntity player) {
@@ -49,16 +36,30 @@ public class StateSaverAndLoader extends SavedData {
         return playerState;
     }
 
-    private static Factory<StateSaverAndLoader> type = new Factory<>(
+    public static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
+
+    private static final Codec<HashMap<UUID, PlayerUnlocksData>> PLAYER_DATA_CODEC =
+            Codec.unboundedMap(UUID_CODEC, PlayerUnlocksData.PLAYER_UNLOCKS_CODEC)
+                    .xmap(HashMap::new, map -> map);
+
+    public static final Codec<StateSaverAndLoader> CODEC =
+            PLAYER_DATA_CODEC.xmap(
+                    StateSaverAndLoader::new,
+                    StateSaverAndLoader::getPlayers
+            );
+
+    private static SavedDataType<StateSaverAndLoader> type = new SavedDataType<>(
+            (String) JourneyCreative.MODID,
             StateSaverAndLoader::new,
-            StateSaverAndLoader::createFromNbt,
+            CODEC,
             null
     );
 
     public static StateSaverAndLoader getServerState(MinecraftServer server) {
-        DimensionDataStorage persistentStateManager = server.getLevel(Level.OVERWORLD).getDataStorage();
+        ServerLevel serverWorld = server.getLevel(Level.OVERWORLD);
+        assert serverWorld != null;
 
-        StateSaverAndLoader state = persistentStateManager.computeIfAbsent(type, JourneyCreative.MODID);
+        StateSaverAndLoader state = serverWorld.getDataStorage().computeIfAbsent(type);
 
         state.setDirty();
 

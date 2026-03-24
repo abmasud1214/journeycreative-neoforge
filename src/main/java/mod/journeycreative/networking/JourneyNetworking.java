@@ -120,6 +120,7 @@ public class JourneyNetworking {
 
             if (bl2 && bl3) {
                 player.inventoryMenu.getSlot(slot).setByPlayer(stack);
+                player.inventoryMenu.setRemoteSlot(slot, stack);
                 player.inventoryMenu.broadcastChanges();
             } else if (bl && bl3) {
                 if (cooldown.isUnderThreshold()) {
