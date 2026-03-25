@@ -95,4 +95,12 @@ public interface ResearchVesselInventory extends Container {
     default int insertIntoInventory(ItemStack stack) {
         return 0;
     }
+
+    default void startOpen(Player player) {
+
+    }
+
+    default void stopOpen(Player player) {
+
+    }
 }

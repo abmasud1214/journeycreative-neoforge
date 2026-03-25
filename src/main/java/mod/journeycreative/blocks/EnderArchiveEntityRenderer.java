@@ -4,23 +4,26 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.journeycreative.JourneyCreative;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
-public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArchiveBlockEntity> {
+public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArchiveBlockEntity, EnderArchiveEntityRenderer.EnderArchiveRenderState> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/block/ender_archive.png");
 
     public EnderArchiveEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-        this(ctx.getModelSet());
+        this(ctx.entityModelSet());
     }
 
     public EnderArchiveEntityRenderer(EntityModelSet loader) {
@@ -28,15 +31,27 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
     }
 
     @Override
-    public void render(EnderArchiveBlockEntity enderArchiveBlockEntity, float f, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, int j, Vec3 vec3) {
-        Direction direction = (Direction) enderArchiveBlockEntity.getBlockState().getValueOrElse(EnderArchiveBlock.FACING, Direction.NORTH);
-
-        float[] g = enderArchiveBlockEntity.getBookTransparency(f);
-        this.render(matrixStack, vertexConsumerProvider, i, j, direction, g);
+    public EnderArchiveRenderState createRenderState() {
+        return new EnderArchiveRenderState();
     }
 
-    public void render(PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay, Direction facing, float[] transparency) {
-        float rotationDegrees = switch (facing) {
+    @Override
+    public void extractRenderState(EnderArchiveBlockEntity blockEntity, EnderArchiveRenderState state, float tickProgress, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+        BlockEntityRenderState.extractBase(blockEntity, state, crumblingOverlay);
+
+        state.blockPos = blockEntity.getBlockPos();
+        state.facing = (Direction) blockEntity.getBlockState().getValueOrElse(EnderArchiveBlock.FACING, Direction.NORTH);
+        state.g = blockEntity.getBookTransparency(tickProgress);
+
+        state.lightCoords = LevelRenderer.getLightColor(
+                blockEntity.getLevel(),
+                blockEntity.getBlockPos()
+        );
+    }
+
+    @Override
+    public void submit(EnderArchiveRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState camera) {
+        float rotationDegrees = switch (state.facing) {
             case NORTH -> 0F;
             case SOUTH -> 180F;
             case WEST -> 90F;
@@ -49,21 +64,38 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
         matrices.mulPose(new Quaternionf().rotateY((float)Math.toRadians(rotationDegrees)));
         matrices.mulPose(new Quaternionf().rotateZ((float)Math.toRadians(180)));
         matrices.translate(-0.5, -0.5, -0.5);
-        VertexConsumer bookTexture = vertexConsumers.getBuffer(RenderType.entityTranslucent(TEXTURE));
-        Vec3i normalVec = facing.getUnitVec3i();
-        for (int i = 0; i < 6; i++) {
-            renderbook(matrices.last(), bookTexture, renderPos(i), uvRanges(i), transparency[i], light, normalVec);
-        }
+
+        queue.submitCustomGeometry(
+                matrices,
+                RenderType.entityTranslucent(TEXTURE),
+                (entry, consumer) -> {
+                    Vec3i normalVec = state.facing.getUnitVec3i();
+                    for (int i = 0; i < 6; i++) {
+                        renderbook(
+                                entry,
+                                consumer,
+                                renderPos(i),
+                                uvRanges(i),
+                                state.g[i],
+                                state.lightCoords,
+                                normalVec
+                        );
+                    }
+                }
+        );
         matrices.popPose();
 
-        VertexConsumer endPortal = vertexConsumers.getBuffer(RenderType.endPortal());
-        Matrix4f model = matrices.last().pose();
-        endPortal.addVertex(model, No16(1), No16(15.5f), No16(15));
-        endPortal.addVertex(model, No16(15), No16(15.5f), No16(15));
-        endPortal.addVertex(model, No16(15), No16(15.5f), No16(1));
-        endPortal.addVertex(model, No16(1), No16(15.5f), No16(1));
-
-
+        queue.submitCustomGeometry(
+                matrices,
+                RenderType.endPortal(),
+                (entry, consumer) -> {
+                    Matrix4f model = entry.pose();
+                    consumer.addVertex(model, No16(1), No16(15.5f), No16(15));
+                    consumer.addVertex(model, No16(15), No16(15.5f), No16(15));
+                    consumer.addVertex(model, No16(15), No16(15.5f), No16(1));
+                    consumer.addVertex(model, No16(1), No16(15.5f), No16(1));
+                }
+        );
     }
 
     private void renderbook(PoseStack.Pose entry, VertexConsumer consumer, float[] renderPos, float[] uvRanges, float transparency, int light, Vec3i normal) {
@@ -134,5 +166,10 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
 
     private float No16(float f) {
         return f / 16.0F;
+    }
+
+    public class EnderArchiveRenderState extends BlockEntityRenderState {
+        public Direction facing;
+        public float[] g;
     }
 }

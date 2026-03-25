@@ -1,18 +1,20 @@
 package mod.journeycreative.blocks;
 
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 
 
-
-public class ResearchVesselEntityModel extends EntityModel<ResearchVesselEntityRenderState> {
+public class ResearchVesselEntityModel extends Model<ResearchVesselEntityRenderState> {
     private final ModelPart Bottom;
     private final ModelPart Top;
 
     public ResearchVesselEntityModel(ModelPart root) {
-        super(root);
+        super(root, id -> RenderType.entityCutoutNoCull((ResourceLocation) id));
         this.Bottom = root.getChild("Bottom");
         this.Top = root.getChild("Top");
     }
@@ -38,16 +40,14 @@ public class ResearchVesselEntityModel extends EntityModel<ResearchVesselEntityR
         return LayerDefinition.create(modelData, 64, 64);
     }
 
-    public void setOpenProgress(float progress) {
-        float pivotY = 24.0F - progress * 11.0F;
-        this.Top.y = pivotY;
-    }
-
     @Override
     public void setupAnim(ResearchVesselEntityRenderState researchVesselEntityRenderState) {
         super.setupAnim(researchVesselEntityRenderState);
 
-        float f = (researchVesselEntityRenderState.openProgress * 11.0F) + 5.0F;
-        this.Top.setPos(0, f, 0);
+        this.Top.resetPose();
+        this.Bottom.resetPose();
+
+        float f = researchVesselEntityRenderState.openProgress * 11.0F;
+        this.Top.y = 24.0F - f;
     }
 }

@@ -22,6 +22,9 @@ import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
@@ -437,14 +440,14 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
     }
 
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent characterEvent) {
         if (this.ignoreTypedCharacter) {
             return false;
         } else if (selectedTab.getType() != CreativeModeTab.Type.SEARCH) {
             return false;
         } else {
             String string = this.searchBox.getValue();
-            if (this.searchBox.charTyped(chr, modifiers)) {
+            if (this.searchBox.charTyped(characterEvent)) {
                 if (!Objects.equals(string, this.searchBox.getValue())) {
                     this.search();
                 }
@@ -456,40 +459,41 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
     }
 
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent keyEvent) {
+        int keyCode = keyEvent.key();
         this.ignoreTypedCharacter = false;
         if (selectedTab.getType() != CreativeModeTab.Type.SEARCH) {
-            if (this.minecraft.options.keyChat.matches(keyCode, scanCode)) {
+            if (this.minecraft.options.keyChat.matches(keyEvent)) {
                 this.ignoreTypedCharacter = true;
                 this.setSelectedTab(CreativeModeTabs.searchTab());
                 return true;
             } else {
-                return super.keyPressed(keyCode, scanCode, modifiers);
+                return super.keyPressed(keyEvent);
             }
         } else {
             boolean bl = !this.isCreativeInventorySlot(this.hoveredSlot) || this.hoveredSlot.hasItem();
-            boolean bl2 = InputConstants.getKey(keyCode, scanCode).getNumericKeyValue().isPresent();
-            if (bl && bl2 && this.checkHotbarKeyPressed(keyCode, scanCode)) {
+            boolean bl2 = InputConstants.getKey(keyEvent).getNumericKeyValue().isPresent();
+            if (bl && bl2 && this.checkHotbarKeyPressed(keyEvent)) {
                 this.ignoreTypedCharacter = true;
                 return true;
             } else {
                 String string = this.searchBox.getValue();
-                if (this.searchBox.keyPressed(keyCode, scanCode, modifiers)) {
+                if (this.searchBox.keyPressed(keyEvent)) {
                     if (!Objects.equals(string, this.searchBox.getValue())) {
                         this.search();
                     }
 
                     return true;
                 } else {
-                    return this.searchBox.isFocused() && this.searchBox.isVisible() && keyCode != 256 || super.keyPressed(keyCode, scanCode, modifiers);
+                    return this.searchBox.isFocused() && this.searchBox.isVisible() && keyCode != 256 || super.keyPressed(keyEvent);
                 }
             }
         }
     }
 
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+    public boolean keyReleased(KeyEvent keyEvent) {
         this.ignoreTypedCharacter = false;
-        return super.keyReleased(keyCode, scanCode, modifiers);
+        return super.keyReleased(keyEvent);
     }
 
     private void search() {
@@ -550,8 +554,9 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        double mouseX = click.x(), mouseY = click.y();
+        if (click.button() == 0) {
             double d = mouseX - (double) this.leftPos;
             double e = mouseY - (double) this.topPos;
             Iterator var10 = currentPage.getVisibleTabs().iterator();
@@ -570,11 +575,12 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseReleased(MouseButtonEvent click) {
+        double mouseX = click.x(), mouseY = click.y();
+        if (click.button() == 0) {
             double d = mouseX - (double) this.leftPos;
             double e = mouseY - (double) this.topPos;
             this.scrolling = false;
@@ -590,7 +596,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             }
         }
 
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     private boolean hasScrollbar() {
@@ -702,7 +708,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
     }
 
-    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
         boolean bl = mouseX < (double)left || mouseY < (double)top || mouseX >= (double)(left + this.imageWidth) || mouseY >= (double)(top + this.imageHeight);
         this.lastClickOutsideBounds = bl && !this.isClickInTab(selectedTab, mouseX, mouseY);
         return this.lastClickOutsideBounds;
@@ -718,7 +724,9 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         return mouseX >= (double) k && mouseY >= (double) l && mouseX < (double) m && mouseY < (double) n;
     }
 
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(MouseButtonEvent click, double deltaX, double deltaY) {
+        double mouseX = click.x();
+        double mouseY = click.y();
         if (this.scrolling) {
             int i = this.topPos + 18;
             int j = i + 112;
@@ -727,7 +735,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             ((JourneyScreenHandler) this.menu).scrollItems(this.scrollPosition);
             return true;
         } else {
-            return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+            return super.mouseDragged(click, deltaX, deltaY);
         }
     }
 

@@ -4,24 +4,27 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.journeycreative.JourneyCreative;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.fml.common.EventBusSubscriber;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.Objects;
 
-public class ResearchVesselEntityRenderer implements BlockEntityRenderer<ResearchVesselBlockEntity> {
+public class ResearchVesselEntityRenderer implements BlockEntityRenderer<ResearchVesselBlockEntity, ResearchVesselEntityRenderState> {
     private final ResearchVesselEntityModel model;
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/block/research_vessel.png");
 
     public ResearchVesselEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-        this(ctx.getModelSet());
+        this(ctx.entityModelSet());
     }
 
     public ResearchVesselEntityRenderer(EntityModelSet loader) {
@@ -29,24 +32,46 @@ public class ResearchVesselEntityRenderer implements BlockEntityRenderer<Researc
     }
 
     @Override
-    public void render(ResearchVesselBlockEntity researchVesselBlockEntity, float f, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, int j, Vec3 vec3) {
-        Direction direction = Direction.UP;
-
-        float g = researchVesselBlockEntity.getAnimationProgress(f);
-        boolean portal = researchVesselBlockEntity.getAnimationStage() == ResearchVesselBlockEntity.AnimationStage.OPENED;
-        this.render(matrixStack, vertexConsumerProvider, i, j, direction, g, portal);
+    public ResearchVesselEntityRenderState createRenderState() {
+        return new ResearchVesselEntityRenderState();
     }
 
-    public void render(PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay, Direction facing, float openness, boolean show_portal) {
+    @Override
+    public void extractRenderState(ResearchVesselBlockEntity blockEntity, ResearchVesselEntityRenderState state,
+                                   float tickProgress, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+        BlockEntityRenderer.super.extractRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
+        state.blockPos = blockEntity.getBlockPos();
+        state.facing = Direction.DOWN;
+        state.openProgress = blockEntity.getAnimationProgress(tickProgress);
+        state.showPortal = blockEntity.getAnimationStage() == ResearchVesselBlockEntity.AnimationStage.OPENED;
+    }
+
+    @Override
+    public void submit(ResearchVesselEntityRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState camera) {
         matrices.pushPose();
-        this.setTransforms(matrices, facing, openness);
-        ResearchVesselEntityModel blockModel = this.model;
-        Objects.requireNonNull(blockModel);
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
-        this.model.renderToBuffer(matrices, vertexConsumer, light, overlay);
+        this.setTransforms(matrices, state);
+        queue.submitModel(
+                this.model,
+                state,
+                matrices,
+                RenderType.entityCutoutNoCull(TEXTURE),
+                state.lightCoords,
+                OverlayTexture.NO_OVERLAY,
+                0,
+                null
+        );
         matrices.popPose();
-        Matrix4f matrix4f = matrices.last().pose();
-        this.renderSides(show_portal, matrix4f, vertexConsumers.getBuffer(RenderType.endPortal()));
+        queue.submitCustomGeometry(
+                matrices,
+                RenderType.endPortal(),
+                ((matricesEntry, vertexConsumer) -> {
+                    renderSides(
+                            state.showPortal,
+                            matricesEntry.pose(),
+                            vertexConsumer
+                    );
+                })
+        );
     }
 
     private void renderSides(boolean show_portal, Matrix4f matrix, VertexConsumer vertexConsumer) {
@@ -74,12 +99,12 @@ public class ResearchVesselEntityRenderer implements BlockEntityRenderer<Researc
         }
     }
 
-    private void setTransforms(PoseStack matrices, Direction facing, float openness) {
+    private void setTransforms(PoseStack matrices, ResearchVesselEntityRenderState state) {
         matrices.translate(0.5F, 0.5F, 0.5F);
         float f = 0.9995F;
         matrices.scale(0.9995F, 0.9995F, 0.9995F);
         matrices.scale(1.0F, -1.0F, -1.0F);
         matrices.translate(0.0F, -1.0F, 0.0F);
-        this.model.setOpenProgress(openness);
+        this.model.setupAnim(state);
     }
 }

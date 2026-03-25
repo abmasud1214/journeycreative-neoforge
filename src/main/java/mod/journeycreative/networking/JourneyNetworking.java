@@ -134,8 +134,8 @@ public class JourneyNetworking {
     }
 
     private static void unlockItemPacket(UnlockItemPayload payload, IPayloadContext context) {
-        var player = context.player();
-        var server = player.getServer();
+        var player = (ServerPlayer) context.player();
+        var server = player.level().getServer();
         var item = payload.stack();
 
         context.enqueueWork(() -> {
@@ -151,7 +151,7 @@ public class JourneyNetworking {
 
     private static void trashCanPacket(TrashCanPayload payload, IPayloadContext context) {
         Player player = context.player();
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = player.level().getServer();
         context.enqueueWork(() -> {
             TrashcanInventory inv = TrashcanServerStorage.get(player);
             ItemStack stack = payload.stack();

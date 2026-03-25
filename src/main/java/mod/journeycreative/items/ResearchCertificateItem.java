@@ -79,7 +79,7 @@ public class ResearchCertificateItem extends Item {
 
     @Override
     public void onUseTick(Level world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
-        if (!world.isClientSide && user instanceof Player player) {
+        if (!world.isClientSide() && user instanceof Player player) {
             int heldTicks = this.getUseDuration(stack, user) - remainingUseTicks;
             player.displayClientMessage(Component.literal("[" + "+".repeat(heldTicks) + "-".repeat(remainingUseTicks) + "]"), true);
         }
