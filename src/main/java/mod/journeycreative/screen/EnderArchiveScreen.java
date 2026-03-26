@@ -8,20 +8,19 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.List;
 import java.util.Optional;
 
 public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHandler> {
-    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("tooltip/background");
-    private static final ResourceLocation ERROR_TEXTURE = ResourceLocation.withDefaultNamespace("container/smithing/error");
-    private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/ender_archive.png");
-    private static final ResourceLocation EMPTY_SLOT_RESEARCH_VESSEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "container/slot/empty_slot_research_vessel");
-    private static final ResourceLocation EMPTY_SLOT_RESEARCH_CERTIFICATE_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "container/slot/empty_slot_research_certificate");
+    private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("tooltip/background");
+    private static final Identifier ERROR_TEXTURE = Identifier.withDefaultNamespace("container/smithing/error");
+    private final Identifier texture = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/ender_archive.png");
+    private static final Identifier EMPTY_SLOT_RESEARCH_VESSEL_TEXTURE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "container/slot/empty_slot_research_vessel");
+    private static final Identifier EMPTY_SLOT_RESEARCH_CERTIFICATE_TEXTURE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "container/slot/empty_slot_research_certificate");
     private final CyclingSlotBackground researchVesselSlotIcon = new CyclingSlotBackground(0);
     private final CyclingSlotBackground researchCertificateSlotIcon = new CyclingSlotBackground(1);
     private static final Component RESEARCH_BLOCKED_TOOLTIP = Component.translatable("container.ender_archive.research_blocked_tooltip");
@@ -29,7 +28,7 @@ public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHan
     private static final Component NOT_ENOUGH_ITEMS_TOOLTIP = Component.translatable("container.ender_archive.not_enough_items_tooltip");
 
     public EnderArchiveScreen(EnderArchiveScreenHandler handler, Inventory playerInventory, Component title) {
-        super(handler, playerInventory, title, ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/ender_archive.png"));
+        super(handler, playerInventory, title, Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/ender_archive.png"));
         this.titleLabelX = 52;
     }
 

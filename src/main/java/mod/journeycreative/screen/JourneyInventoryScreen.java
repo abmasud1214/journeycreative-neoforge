@@ -30,7 +30,6 @@ import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.*;
@@ -39,7 +38,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
@@ -75,16 +74,16 @@ import java.util.stream.Stream;
 
 public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInventoryScreen.JourneyScreenHandler> {
     public static final WidgetSprites JOURNEY_BUTTON_TEXTURES = new WidgetSprites(
-            ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "journey_button"),
-            ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "journey_button_highlighted"));
+            Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "journey_button"),
+            Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "journey_button_highlighted"));
 
-    private static final ResourceLocation SCROLLER_TEXTURE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller");
-    private static final ResourceLocation SCROLLER_DISABLED_TEXTURE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller_disabled");
-    private static final ResourceLocation[] TAB_TOP_UNSELECTED_TEXTURES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_7")};
-    private static final ResourceLocation[] TAB_TOP_SELECTED_TEXTURES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_7")};
-    private static final ResourceLocation[] TAB_BOTTOM_UNSELECTED_TEXTURES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_7")};
-    private static final ResourceLocation[] TAB_BOTTOM_SELECTED_TEXTURES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_7")};
-    private static final ResourceLocation JOURNEY_INVENTORY_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/gui_journey_inventory.png");
+    private static final Identifier SCROLLER_TEXTURE = Identifier.withDefaultNamespace("container/creative_inventory/scroller");
+    private static final Identifier SCROLLER_DISABLED_TEXTURE = Identifier.withDefaultNamespace("container/creative_inventory/scroller_disabled");
+    private static final Identifier[] TAB_TOP_UNSELECTED_TEXTURES = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_7")};
+    private static final Identifier[] TAB_TOP_SELECTED_TEXTURES = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_7")};
+    private static final Identifier[] TAB_BOTTOM_UNSELECTED_TEXTURES = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_7")};
+    private static final Identifier[] TAB_BOTTOM_SELECTED_TEXTURES = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_7")};
+    private static final Identifier JOURNEY_INVENTORY_TEXTURE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/gui_journey_inventory.png");
     private static final int ROWS_COUNT = 5;
     private static final int COLUMNS_COUNT = 9;
     private static final int TAB_WIDTH = 26;
@@ -420,10 +419,10 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         );
     }
 
-    public void resize(Minecraft client, int width, int height) {
+    public void resize(int width, int height) {
         int i = ((JourneyScreenHandler) this.menu).getRow(this.scrollPosition);
         String string  = this.searchBox.getValue();
-        this.init(client, width, height);
+        this.init(width, height);
         this.searchBox.setValue(string);
         if (!this.searchBox.getValue().isEmpty()) {
             this.search();
@@ -527,15 +526,15 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
 
     private void searchForTags(String id) {
         int i = id.indexOf(58);
-        Predicate<ResourceLocation> predicate;
+        Predicate<Identifier> predicate;
         if (i == -1) {
-            predicate = (ResourceLocation idx) -> {
+            predicate = (Identifier idx) -> {
                 return idx.getPath().contains(id);
             };
         } else {
             String string = id.substring(0, i).trim();
             String string2 = id.substring(i+1).trim();
-            predicate = (ResourceLocation idx) -> {
+            predicate = (Identifier idx) -> {
                 return idx.getNamespace().contains(string) && idx.getPath().contains(string2);
             };
         }
@@ -742,8 +741,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         super.render(context, mouseX, mouseY, deltaTicks);
-        this.statusEffectsDisplay.renderEffects(context, mouseX, mouseY);
-        this.statusEffectsDisplay.renderTooltip(context, mouseX, mouseY);
+        this.statusEffectsDisplay.render(context, mouseX, mouseY);
 
         if (this.deleteItemSlot != null &&
                 selectedTab.getType() == CreativeModeTab.Type.INVENTORY &&
@@ -830,7 +828,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         int j = this.topPos + 18;
         int k = j + 112;
         if (selectedTab.canScroll()) {
-            ResourceLocation identifier = this.hasScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
+            Identifier identifier = this.hasScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
             context.blitSprite(RenderPipelines.GUI_TEXTURED, identifier, i, j + (int)((float)(k - j - 17) * this.scrollPosition), 12, 15);
         }
 
@@ -886,14 +884,14 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         int i = this.currentPage.getColumn(group);
         int j = this.leftPos + this.getTabX(group);
         int k = this.topPos - (flag1 ? 28 : -(this.imageHeight - 4));
-        ResourceLocation[] aresourcelocation;
+        Identifier[] aIdentifier;
         if (flag1) {
-            aresourcelocation = flag ? TAB_TOP_SELECTED_TEXTURES : TAB_TOP_UNSELECTED_TEXTURES;
+            aIdentifier = flag ? TAB_TOP_SELECTED_TEXTURES : TAB_TOP_UNSELECTED_TEXTURES;
         } else {
-            aresourcelocation = flag ? TAB_BOTTOM_SELECTED_TEXTURES : TAB_BOTTOM_UNSELECTED_TEXTURES;
+            aIdentifier = flag ? TAB_BOTTOM_SELECTED_TEXTURES : TAB_BOTTOM_UNSELECTED_TEXTURES;
         }
 
-        context.blitSprite(RenderPipelines.GUI_TEXTURED, aresourcelocation[Mth.clamp(i, 0, aresourcelocation.length)], j, k, 26, 32);
+        context.blitSprite(RenderPipelines.GUI_TEXTURED, aIdentifier[Mth.clamp(i, 0, aIdentifier.length)], j, k, 26, 32);
         int l = j + 13 - 8;
         int i1 = k + 16 - 8 + (flag1 ? 1 : -1);
         context.renderItem(group.getIconItem(), l, i1);
@@ -1194,7 +1192,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
 
         @Nullable
-        public ResourceLocation getNoItemIcon() {
+        public Identifier getNoItemIcon() {
             return this.slot.getNoItemIcon();
         }
 

@@ -5,8 +5,8 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 
 
 public class ResearchVesselEntityModel extends Model<ResearchVesselEntityRenderState> {
@@ -14,7 +14,7 @@ public class ResearchVesselEntityModel extends Model<ResearchVesselEntityRenderS
     private final ModelPart Top;
 
     public ResearchVesselEntityModel(ModelPart root) {
-        super(root, id -> RenderType.entityCutoutNoCull((ResourceLocation) id));
+        super(root, id -> RenderTypes.entityCutoutNoCull((Identifier) id));
         this.Bottom = root.getChild("Bottom");
         this.Top = root.getChild("Top");
     }

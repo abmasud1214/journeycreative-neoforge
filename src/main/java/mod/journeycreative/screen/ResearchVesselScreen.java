@@ -6,9 +6,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -16,9 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVesselScreenHandler> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/shulker_box.png");
-    private static final ResourceLocation INVALID_RESEARCH_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/sprites/invalid_research.png");
-    private static final ResourceLocation WARNING_RESEARCH_TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/sprites/prereq_research.png");
+    private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/shulker_box.png");
+    private static final Identifier INVALID_RESEARCH_TEXTURE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/sprites/invalid_research.png");
+    private static final Identifier WARNING_RESEARCH_TEXTURE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "textures/gui/sprites/prereq_research.png");
     private static final Component CANNOT_RESEARCH_TOOLTIP = Component.translatable("container.ender_archive.cannot_research_tooltip");
     private static final Component RESEARCH_BLOCKED_TOOLTIP = Component.translatable("container.ender_archive.research_blocked_tooltip");
     private Component warning;

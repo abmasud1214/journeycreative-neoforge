@@ -1,11 +1,10 @@
 package mod.journeycreative.networking;
 
-import com.google.common.eventbus.Subscribe;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.logging.LogUtils;
 import mod.journeycreative.JourneyCreative;
+import mod.journeycreative.ModGameRules;
 import mod.journeycreative.screen.TrashcanInventory;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -16,7 +15,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,14 +39,14 @@ import java.util.*;
 
 @EventBusSubscriber(modid = JourneyCreative.MODID)
 public class JourneyNetworking {
-    public static final ResourceLocation GIVE_ITEM = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "give_item");
-    public static final ResourceLocation UNLOCK_ITEM = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "unlock_item");
-    public static final ResourceLocation TRASH_CAN = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "trash_can");
-    public static final ResourceLocation SYNC_UNLOCKED_ITEMS = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "sync_unlock_item");
-    public static final ResourceLocation SYNC_TRASH_CAN = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "sync_trash_can");
-    public static final ResourceLocation SYNC_RESEARCH_ITEMS_UNLOCKED_RULE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "sync_research_rule");
-    public static final ResourceLocation ROTATE_ITEMS = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "rotate_items");
-    public static final ResourceLocation SEND_ITEM_WARNING_MESSAGE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "send_item_warning_message");
+    public static final Identifier GIVE_ITEM = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "give_item");
+    public static final Identifier UNLOCK_ITEM = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "unlock_item");
+    public static final Identifier TRASH_CAN = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "trash_can");
+    public static final Identifier SYNC_UNLOCKED_ITEMS = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "sync_unlock_item");
+    public static final Identifier SYNC_TRASH_CAN = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "sync_trash_can");
+    public static final Identifier SYNC_RESEARCH_ITEMS_UNLOCKED_RULE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "sync_research_rule");
+    public static final Identifier ROTATE_ITEMS = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "rotate_items");
+    public static final Identifier SEND_ITEM_WARNING_MESSAGE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "send_item_warning_message");
 
     static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<UUID, TickThrottler> playerCreativeItemDropCooldowns = new HashMap<>();
@@ -168,7 +167,12 @@ public class JourneyNetworking {
         var registryAccess = event.getBuildContext();
         dispatcher
                 .register(Commands.literal("unlockitem")
-                .requires(src -> src.hasPermission(2))
+                .requires(src -> {
+                    var player = src.getPlayer();
+                    return player != null &&
+                            src.getServer() != null &&
+                            src.getServer().getPlayerList().isOp(src.getPlayer().nameAndId());
+                })
                 .then(Commands.argument("item", ItemArgument.item(registryAccess))
                         .executes(JourneyNetworking::unlockItemCommand)));
     }
@@ -213,7 +217,7 @@ public class JourneyNetworking {
 
     public static void syncResearchItemsUnlocked(ServerPlayer player) {
         if (player.level() instanceof ServerLevel serverWorld) {
-            boolean value = serverWorld.getGameRules().getBoolean(JourneyCreative.RESEARCH_ITEMS_UNLOCKED);
+            boolean value = serverWorld.getGameRules().get(ModGameRules.RESEARCH_ITEMS_UNLOCKED.get());
             player.level().getServer().execute(() -> {
                 PacketDistributor.sendToPlayer(player, new SyncResearchItemsUnlockRulePayload(value));
             });

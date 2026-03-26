@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -19,15 +19,15 @@ import java.util.*;
 
 @EventBusSubscriber(modid = JourneyCreative.MODID)
 public class ResearchConfig {
-    public static Map<ResourceLocation, Integer> RESEARCH_AMOUNT_REQUIREMENTS = new HashMap<>();
+    public static Map<Identifier, Integer> RESEARCH_AMOUNT_REQUIREMENTS = new HashMap<>();
     public static float DEFAULT_AMOUNT_ADJUSTMENT = 1.0f;
-    public static Map<ResourceLocation, List<ResourceLocation>> RESEARCH_PREREQUISITES = new HashMap<>();
-    public static Set<ResourceLocation> RESEARCH_PROHIBITED = new HashSet<>();
-    public static Set<ResourceLocation> RESEARCH_BLOCKED = new HashSet<>();
+    public static Map<Identifier, List<Identifier>> RESEARCH_PREREQUISITES = new HashMap<>();
+    public static Set<Identifier> RESEARCH_PROHIBITED = new HashSet<>();
+    public static Set<Identifier> RESEARCH_BLOCKED = new HashSet<>();
 
     @SubscribeEvent
     public static void onAddReloadListener(AddServerReloadListenersEvent event) {
-        event.addListener(ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "research_loader"), new ResearchLoader());
+        event.addListener(Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "research_loader"), new ResearchLoader());
     }
 
     private static class ResearchLoader extends SimplePreparableReloadListener<ResearchData> {
@@ -36,7 +36,7 @@ public class ResearchConfig {
             ResearchData data = new ResearchData();
 
             for (var entry : manager.listResources("research", path -> path.getPath().endsWith(".json")).entrySet()) {
-                ResourceLocation id = entry.getKey();
+                Identifier id = entry.getKey();
                 try (Reader reader = new InputStreamReader(entry.getValue().open())) {
                     if (id.getPath().endsWith("research_amount.json")) {
                         JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
@@ -70,18 +70,18 @@ public class ResearchConfig {
     }
 
     private static class ResearchData {
-        final Map<ResourceLocation, Integer> amounts = new HashMap<>();
+        final Map<Identifier, Integer> amounts = new HashMap<>();
         float default_amount = 1.0f;
-        final Map<ResourceLocation, List<ResourceLocation>> prereqs = new HashMap<>();
-        final Set<ResourceLocation> prohibited = new HashSet<>();
-        final Set<ResourceLocation> blocked = new HashSet<>();
+        final Map<Identifier, List<Identifier>> prereqs = new HashMap<>();
+        final Set<Identifier> prohibited = new HashSet<>();
+        final Set<Identifier> blocked = new HashSet<>();
     }
 
-    public static Map<ResourceLocation, Integer> parseResearchAmounts(JsonObject root) {
-        Map<ResourceLocation, Integer> map = new HashMap<>();
+    public static Map<Identifier, Integer> parseResearchAmounts(JsonObject root) {
+        Map<Identifier, Integer> map = new HashMap<>();
         JsonObject requirements = root.getAsJsonObject("requirements");
         for (Map.Entry<String, JsonElement> requirement : requirements.entrySet()) {
-            ResourceLocation itemId = ResourceLocation.parse(requirement.getKey());
+            Identifier itemId = Identifier.parse(requirement.getKey());
             int amount = requirement.getValue().getAsInt();
             map.put(itemId, amount);
         }
@@ -92,16 +92,16 @@ public class ResearchConfig {
         return root.getAsJsonPrimitive("default").getAsFloat();
     }
 
-    public static Map<ResourceLocation, List<ResourceLocation>> parseResearchPrerequisites(Reader reader) {
-        Map<ResourceLocation, List<ResourceLocation>> map = new HashMap<>();
+    public static Map<Identifier, List<Identifier>> parseResearchPrerequisites(Reader reader) {
+        Map<Identifier, List<Identifier>> map = new HashMap<>();
         JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
         JsonObject requirements = root.getAsJsonObject("prerequisites");
 
         for (Map.Entry<String, JsonElement> requirement : requirements.entrySet()) {
-            ResourceLocation itemId = ResourceLocation.parse(requirement.getKey());
-            List<ResourceLocation> itemPrereqs = new ArrayList<>();
+            Identifier itemId = Identifier.parse(requirement.getKey());
+            List<Identifier> itemPrereqs = new ArrayList<>();
             for (JsonElement element : requirement.getValue().getAsJsonArray()) {
-                itemPrereqs.add(ResourceLocation.parse(element.getAsString()));
+                itemPrereqs.add(Identifier.parse(element.getAsString()));
             }
 
             map.put(itemId, itemPrereqs);
@@ -109,20 +109,20 @@ public class ResearchConfig {
         return map;
     }
 
-    public static Set<ResourceLocation> parseResearchProhibited(Reader reader) {
-        Set<ResourceLocation> set = new HashSet<>();
+    public static Set<Identifier> parseResearchProhibited(Reader reader) {
+        Set<Identifier> set = new HashSet<>();
         JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
         for (JsonElement element : root.getAsJsonArray("unresearchable")) {
-            set.add(ResourceLocation.parse(element.getAsString()));
+            set.add(Identifier.parse(element.getAsString()));
         }
         return set;
     }
 
-    public static Set<ResourceLocation> parseResearchBlocked(Reader reader) {
-        Set<ResourceLocation> set = new HashSet<>();
+    public static Set<Identifier> parseResearchBlocked(Reader reader) {
+        Set<Identifier> set = new HashSet<>();
         JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
         for (JsonElement element : root.getAsJsonArray("blocked")) {
-            set.add(ResourceLocation.parse(element.getAsString()));
+            set.add(Identifier.parse(element.getAsString()));
         }
         return set;
     }

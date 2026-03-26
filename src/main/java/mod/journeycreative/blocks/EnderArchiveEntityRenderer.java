@@ -9,18 +9,19 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArchiveBlockEntity, EnderArchiveEntityRenderer.EnderArchiveRenderState> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/block/ender_archive.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "textures/block/ender_archive.png");
 
     public EnderArchiveEntityRenderer(BlockEntityRendererProvider.Context ctx) {
         this(ctx.entityModelSet());
@@ -67,7 +68,7 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
 
         queue.submitCustomGeometry(
                 matrices,
-                RenderType.entityTranslucent(TEXTURE),
+                RenderTypes.entityTranslucent(TEXTURE),
                 (entry, consumer) -> {
                     Vec3i normalVec = state.facing.getUnitVec3i();
                     for (int i = 0; i < 6; i++) {
@@ -87,7 +88,7 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
 
         queue.submitCustomGeometry(
                 matrices,
-                RenderType.endPortal(),
+                RenderTypes.endPortal(),
                 (entry, consumer) -> {
                     Matrix4f model = entry.pose();
                     consumer.addVertex(model, No16(1), No16(15.5f), No16(15));

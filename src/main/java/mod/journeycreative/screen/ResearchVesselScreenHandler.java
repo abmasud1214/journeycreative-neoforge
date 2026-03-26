@@ -1,6 +1,6 @@
 package mod.journeycreative.screen;
 
-import mod.journeycreative.JourneyCreative;
+import mod.journeycreative.ModGameRules;
 import mod.journeycreative.ResearchConfig;
 import mod.journeycreative.blocks.ResearchVesselInventory;
 import mod.journeycreative.networking.JourneyNetworking;
@@ -16,7 +16,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -123,8 +123,6 @@ public class ResearchVesselScreenHandler extends AbstractContainerMenu {
 
     @Override
     public void clicked(int slotIndex, int button, ClickType actionType, Player player) {
-        boolean canInsert = true;
-
         ItemStack stack = isInsertAction(slotIndex, button, actionType, player);
         if (!stack.isEmpty()) {
             try {
@@ -257,14 +255,14 @@ public class ResearchVesselScreenHandler extends AbstractContainerMenu {
         if (!ItemStack.isSameItemSameComponents(target, previousTarget) || init) {
             previousTarget = target;
             PlayerUnlocksData playerUnlocksData = StateSaverAndLoader.getPlayerState(player);
-            List<ResourceLocation> prerequisites = ResearchConfig.RESEARCH_PREREQUISITES.getOrDefault(
-                    BuiltInRegistries.ITEM.getKey(target.getItem()), new ArrayList<ResourceLocation>()
+            List<Identifier> prerequisites = ResearchConfig.RESEARCH_PREREQUISITES.getOrDefault(
+                    BuiltInRegistries.ITEM.getKey(target.getItem()), new ArrayList<Identifier>()
             );
             ArrayList<Component> prereqs = new ArrayList<>();
             if (!prerequisites.isEmpty()) {
-                for (ResourceLocation id : prerequisites) {
+                for (Identifier id : prerequisites) {
                     ItemStack prereqStack = new ItemStack(BuiltInRegistries.ITEM.getValue(id), 1);
-                    if (!playerUnlocksData.isUnlocked(prereqStack, serverWorld.getGameRules().getBoolean(JourneyCreative.RESEARCH_ITEMS_UNLOCKED))) {
+                    if (!playerUnlocksData.isUnlocked(prereqStack, serverWorld.getGameRules().get(ModGameRules.RESEARCH_ITEMS_UNLOCKED.get()))) {
                         prereqs.add(prereqStack.getItemName());
                     }
                 }

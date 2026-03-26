@@ -3,7 +3,7 @@ package mod.journeycreative.keybinds;
 import com.mojang.blaze3d.platform.InputConstants;
 import mod.journeycreative.JourneyCreative;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(modid = JourneyCreative.MODID)
 public class ModKeyBindings {
-    public static final KeyMapping.Category JOURNEY_CREATIVE = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "main"));
+    public static final KeyMapping.Category JOURNEY_CREATIVE = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "main"));
 
     public static Lazy<KeyMapping> ROTATE_INVENTORY = Lazy.of(() -> new KeyMapping(
             "key.journeycreative.rotate_inventory",

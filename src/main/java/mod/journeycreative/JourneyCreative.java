@@ -1,12 +1,19 @@
 package mod.journeycreative;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.serialization.Codec;
 import mod.journeycreative.blocks.ModBlocks;
 import mod.journeycreative.items.ModComponents;
 import mod.journeycreative.items.ModItems;
 import mod.journeycreative.networking.JourneyNetworking;
 import mod.journeycreative.screen.ModScreens;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.level.gamerules.*;
+import net.neoforged.neoforge.event.level.GameRuleChangedEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -56,7 +63,6 @@ public class JourneyCreative {
 //            .icon(() -> ModItems.RESEARCH_CERTIFICATE.get().getDefaultInstance())
 //            .displayItems((parameters, output) -> {}).build());
 
-    public static GameRules.Key<GameRules.BooleanValue> RESEARCH_ITEMS_UNLOCKED;
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
@@ -68,6 +74,7 @@ public class JourneyCreative {
         ModItems.initialize(modEventBus);
         ModScreens.initialize(modEventBus);
         ModComponents.initialize(modEventBus);
+        ModGameRules.initialize(modEventBus);
 
         // Register the Deferred Register to the mod event bus so tabs get registered
 //        CREATIVE_MODE_TABS.register(modEventBus);
@@ -87,8 +94,6 @@ public class JourneyCreative {
     private void commonSetup(FMLCommonSetupEvent event) {
         // Some common setup code
         LOGGER.info("HELLO FROM COMMON SETUP");
-
-        event.enqueueWork(JourneyCreative::registerGameRules);
     }
 
     // Add the example block item to the building blocks tab
@@ -106,15 +111,11 @@ public class JourneyCreative {
         LOGGER.info("HELLO from server starting");
     }
 
-    public static void registerGameRules() {
-        RESEARCH_ITEMS_UNLOCKED = GameRules.register(
-                "researchItemsUnlocked",
-                GameRules.Category.MISC,
-                GameRules.BooleanValue.create(false, (server, rule) -> {
-                    for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                        JourneyNetworking.syncResearchItemsUnlocked(player);
-                    }
-                })
-        );
+    @SubscribeEvent
+    public void onGameRuleChange(GameRuleChangedEvent event) {
+        MinecraftServer server = event.getServer();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            JourneyNetworking.syncResearchItemsUnlocked(player);
+        }
     }
 }

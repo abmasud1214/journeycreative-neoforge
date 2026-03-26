@@ -1,6 +1,7 @@
 package mod.journeycreative.items;
 
 import mod.journeycreative.JourneyCreative;
+import mod.journeycreative.ModGameRules;
 import mod.journeycreative.ResearchConfig;
 import mod.journeycreative.networking.JourneyNetworking;
 import mod.journeycreative.networking.PlayerUnlocksData;
@@ -11,7 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -93,20 +94,20 @@ public class ResearchCertificateItem extends Item {
             PlayerUnlocksData playerState = StateSaverAndLoader.getPlayerState(player);
             ItemStack research_target = stack.get(ModComponents.RESEARCH_ITEM_COMPONENT).stack();
 
-            Set<ResourceLocation> prohibited = ResearchConfig.RESEARCH_PROHIBITED;
+            Set<Identifier> prohibited = ResearchConfig.RESEARCH_PROHIBITED;
             if (prohibited.contains(BuiltInRegistries.ITEM.getKey(research_target.getItem()))) {
                 player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.cannot_unlock", getItemName(research_target)), true);
                 return stack;
             }
 
-            List<ResourceLocation> prerequisites = ResearchConfig.RESEARCH_PREREQUISITES.getOrDefault(
-                    BuiltInRegistries.ITEM.getKey(research_target.getItem()), new ArrayList<ResourceLocation>()
+            List<Identifier> prerequisites = ResearchConfig.RESEARCH_PREREQUISITES.getOrDefault(
+                    BuiltInRegistries.ITEM.getKey(research_target.getItem()), new ArrayList<Identifier>()
             );
             ArrayList<Component> prereqs = new ArrayList<>();
             if (!prerequisites.isEmpty()) {
-                for (ResourceLocation id : prerequisites) {
+                for (Identifier id : prerequisites) {
                     ItemStack prereqStack = new ItemStack(BuiltInRegistries.ITEM.getValue(id), 1);
-                    if (!playerState.isUnlocked(prereqStack, serverWorld.getGameRules().getBoolean(JourneyCreative.RESEARCH_ITEMS_UNLOCKED))) {
+                    if (!playerState.isUnlocked(prereqStack, serverWorld.getGameRules().get(ModGameRules.RESEARCH_ITEMS_UNLOCKED.get()))) {
                         prereqs.add(getItemName(prereqStack));
                     }
                 }

@@ -40,8 +40,7 @@ public class ModItems {
     public static final DeferredItem<Item> RESEARCH_CERTIFICATE = ITEMS.registerItem(
             "research_certificate",
             ResearchCertificateItem::new,
-            new Item.Properties()
-                    .stacksTo(1)
+            props -> props.stacksTo(1)
     );
 
     public static void initialize(IEventBus modEventBus) {

@@ -4,15 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.journeycreative.JourneyCreative;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class ResearchVesselEntityRenderer implements BlockEntityRenderer<ResearchVesselBlockEntity, ResearchVesselEntityRenderState> {
     private final ResearchVesselEntityModel model;
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(JourneyCreative.MODID, "textures/block/research_vessel.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "textures/block/research_vessel.png");
 
     public ResearchVesselEntityRenderer(BlockEntityRendererProvider.Context ctx) {
         this(ctx.entityModelSet());
@@ -54,7 +54,7 @@ public class ResearchVesselEntityRenderer implements BlockEntityRenderer<Researc
                 this.model,
                 state,
                 matrices,
-                RenderType.entityCutoutNoCull(TEXTURE),
+                RenderTypes.entityCutoutNoCull(TEXTURE),
                 state.lightCoords,
                 OverlayTexture.NO_OVERLAY,
                 0,
@@ -63,7 +63,7 @@ public class ResearchVesselEntityRenderer implements BlockEntityRenderer<Researc
         matrices.popPose();
         queue.submitCustomGeometry(
                 matrices,
-                RenderType.endPortal(),
+                RenderTypes.endPortal(),
                 ((matricesEntry, vertexConsumer) -> {
                     renderSides(
                             state.showPortal,
