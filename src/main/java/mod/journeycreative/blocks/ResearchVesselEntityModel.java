@@ -14,7 +14,7 @@ public class ResearchVesselEntityModel extends Model<ResearchVesselEntityRenderS
     private final ModelPart Top;
 
     public ResearchVesselEntityModel(ModelPart root) {
-        super(root, id -> RenderTypes.entityCutoutNoCull((Identifier) id));
+        super(root, id -> RenderTypes.entityCutout((Identifier) id));
         this.Bottom = root.getChild("Bottom");
         this.Top = root.getChild("Top");
     }

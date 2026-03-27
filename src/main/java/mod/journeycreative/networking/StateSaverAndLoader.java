@@ -4,13 +4,13 @@ import com.mojang.serialization.Codec;
 import mod.journeycreative.JourneyCreative;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -49,7 +49,7 @@ public class StateSaverAndLoader extends SavedData {
             );
 
     private static SavedDataType<StateSaverAndLoader> type = new SavedDataType<>(
-            (String) JourneyCreative.MODID,
+            Identifier.fromNamespaceAndPath(JourneyCreative.MODID, "unlockdata"),
             StateSaverAndLoader::new,
             CODEC,
             null

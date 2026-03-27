@@ -1,7 +1,7 @@
 package mod.journeycreative.screen;
 
 import mod.journeycreative.JourneyCreative;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -27,23 +27,23 @@ public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVessel
     }
 
     @Override
-    protected void renderBg(GuiGraphics context, float deltaTicks, int mouseX, int mouseY) {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
         context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-        super.render(context, mouseX, mouseY, deltaTicks);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        super.extractRenderState(context, mouseX, mouseY, deltaTicks);
         warning = menu.getWarning();
-        this.renderTooltip(context, mouseX, mouseY);
+        this.extractTooltip(context, mouseX, mouseY);
         this.renderItemProgress(context);
         this.renderInvalid(context);
         this.renderSlotTooltip(context, mouseX, mouseY);
     }
 
-    private void renderItemProgress(GuiGraphics context) {
+    private void renderItemProgress(GuiGraphicsExtractor context) {
         Optional<Component> optional = Optional.empty();
         ResearchVesselScreenHandler handler = this.getMenu();
         EnderArchiveScreenHandler.researchInvalidReason reason = handler.getReason();
@@ -61,10 +61,10 @@ public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVessel
                 x -= 7;
             }
 
-            context.drawString(this.font, text, x, this.topPos + 6, CommonColors.DARK_GRAY, false);
+            context.text(this.font, text, x, this.topPos + 6, CommonColors.DARK_GRAY, false);
         });
     }
-    private void renderInvalid(GuiGraphics context) {
+    private void renderInvalid(GuiGraphicsExtractor context) {
 
         ResearchVesselScreenHandler handler = this.getMenu();
         EnderArchiveScreenHandler.researchInvalidReason reason = handler.getReason();
@@ -83,7 +83,7 @@ public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVessel
         }
     }
 
-    private void renderSlotTooltip(GuiGraphics context, int mouseX, int mouseY) {
+    private void renderSlotTooltip(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         Optional<Component> optional = Optional.empty();
         ResearchVesselScreenHandler handler = this.getMenu();
         EnderArchiveScreenHandler.researchInvalidReason reason = handler.getReason();
@@ -109,7 +109,7 @@ public class ResearchVesselScreen extends AbstractContainerScreen<ResearchVessel
                     .map(ClientTooltipComponent::create)
                     .toList();
 
-            context.renderTooltip(this.font,
+            context.tooltip(this.font,
                     components, mouseX, mouseY,
                     DefaultTooltipPositioner.INSTANCE,
                     null);

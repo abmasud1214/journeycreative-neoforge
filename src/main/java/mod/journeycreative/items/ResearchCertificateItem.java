@@ -1,14 +1,14 @@
 package mod.journeycreative.items;
 
-import mod.journeycreative.JourneyCreative;
 import mod.journeycreative.ModGameRules;
 import mod.journeycreative.ResearchConfig;
 import mod.journeycreative.networking.JourneyNetworking;
 import mod.journeycreative.networking.PlayerUnlocksData;
 import mod.journeycreative.networking.StateSaverAndLoader;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class ResearchCertificateItem extends Item {
-    private static final ItemStack barrier = new ItemStack(Items.BARRIER);
-
     public ResearchCertificateItem(Properties settings) {
         super(settings);
     }
@@ -51,7 +49,7 @@ public class ResearchCertificateItem extends Item {
             return Component.literal("Unknown Item");
         }
 
-        return item.getName();
+        return item.components().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
     }
 
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag type) {
@@ -82,7 +80,7 @@ public class ResearchCertificateItem extends Item {
     public void onUseTick(Level world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
         if (!world.isClientSide() && user instanceof Player player) {
             int heldTicks = this.getUseDuration(stack, user) - remainingUseTicks;
-            player.displayClientMessage(Component.literal("[" + "+".repeat(heldTicks) + "-".repeat(remainingUseTicks) + "]"), true);
+            player.sendOverlayMessage(Component.literal("[" + "+".repeat(heldTicks) + "-".repeat(remainingUseTicks) + "]"));
         }
     }
 
@@ -96,7 +94,7 @@ public class ResearchCertificateItem extends Item {
 
             Set<Identifier> prohibited = ResearchConfig.RESEARCH_PROHIBITED;
             if (prohibited.contains(BuiltInRegistries.ITEM.getKey(research_target.getItem()))) {
-                player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.cannot_unlock", getItemName(research_target)), true);
+                player.sendOverlayMessage(Component.translatable("item.journeycreative.research_certificate.cannot_unlock", getItemName(research_target)));
                 return stack;
             }
 
@@ -117,7 +115,7 @@ public class ResearchCertificateItem extends Item {
                 prereqText.append(Component.literal("["));
                 prereqText.append(ComponentUtils.formatList(prereqs, Component.literal(", ")));
                 prereqText.append(Component.literal("]"));
-                player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.need_prerequisite", prereqText, getItemName(research_target)), false);
+                player.sendSystemMessage(Component.translatable("item.journeycreative.research_certificate.need_prerequisite", prereqText, getItemName(research_target)));
                 return stack;
             }
 
@@ -126,10 +124,10 @@ public class ResearchCertificateItem extends Item {
             PacketDistributor.sendToPlayer(playerEntity, new JourneyNetworking.SyncUnlockedItemsPayload(playerState));
 
             if (unlocked) {
-                player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.unlocked", getItemName(research_target)), true);
+                player.sendOverlayMessage(Component.translatable("item.journeycreative.research_certificate.unlocked", getItemName(research_target)));
                 stack.shrink(1);
             } else {
-                player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.already_unlocked", getItemName(research_target)), true);
+                player.sendOverlayMessage(Component.translatable("item.journeycreative.research_certificate.already_unlocked", getItemName(research_target)));
             }
         }
         return stack;

@@ -142,7 +142,7 @@ public class EnderArchiveScreenHandler extends ItemCombinerMenu {
     }
 
     private static boolean fullContainer(ItemStack target, ItemContainerContents container) {
-        Iterable<ItemStack> containerStacks = container.nonEmptyItems();
+        Iterable<ItemStack> containerStacks = container.nonEmptyItemCopyStream().toList();
         int full = ResearchConfig.RESEARCH_AMOUNT_REQUIREMENTS.getOrDefault(BuiltInRegistries.ITEM.getKey(target.getItem()),27 * target.getMaxStackSize());
         full = Math.min(full, 27 * target.getMaxStackSize());
         for (ItemStack stack : containerStacks) {

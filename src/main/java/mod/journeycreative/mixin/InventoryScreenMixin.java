@@ -30,7 +30,7 @@ public class InventoryScreenMixin {
         ((ScreenAccessor)screen).callAddRenderableWidget(journeyButton);
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void updateJourneyButtonPosition(CallbackInfo ci) {
         if (journeyButton != null) {
             InventoryScreen screen = (InventoryScreen)(Object)this;

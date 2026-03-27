@@ -1,12 +1,11 @@
 package mod.journeycreative.screen;
 
 import mod.journeycreative.JourneyCreative;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.CyclingSlotBackground;
 import net.minecraft.client.gui.screens.inventory.ItemCombinerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -39,27 +38,27 @@ public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHan
     }
 
     @Override
-    protected void renderBg(GuiGraphics context, float deltaTicks, int mouseX, int mouseY) {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         context.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-        this.researchCertificateSlotIcon.render(this.menu, context, deltaTicks, this.leftPos, this.topPos);
-        this.researchVesselSlotIcon.render(this.menu, context, deltaTicks, this.leftPos, this.topPos);
-        this.renderErrorIcon(context, this.leftPos, this.topPos);
+        this.researchCertificateSlotIcon.extractRenderState(this.menu, context, deltaTicks, this.leftPos, this.topPos);
+        this.researchVesselSlotIcon.extractRenderState(this.menu, context, deltaTicks, this.leftPos, this.topPos);
+        this.extractErrorIcon(context, this.leftPos, this.topPos);
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-        super.render(context, mouseX, mouseY, deltaTicks);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        super.extractRenderState(context, mouseX, mouseY, deltaTicks);
         this.renderSlotTooltip(context, mouseX, mouseY);
     }
 
     @Override
-    protected void renderErrorIcon(GuiGraphics context, int x, int y) {
+    protected void extractErrorIcon(GuiGraphicsExtractor context, int x, int y) {
         if (this.getMenu().hasInvalidRecipe()) {
             context.blitSprite(RenderPipelines.GUI_TEXTURED, ERROR_TEXTURE, this.leftPos + 74,this.topPos + 31, 28, 21);
         }
     }
 
-    private void renderSlotTooltip(GuiGraphics context, int mouseX, int mouseY) {
+    private void renderSlotTooltip(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         Optional<Component> optional = Optional.empty();
         if (this.getMenu().hasInvalidRecipe() & this.isHovering(74, 31, 28, 21, (double) mouseX, (double) mouseY)) {
             EnderArchiveScreenHandler.researchInvalidReason reason = this.getMenu().getReason();
@@ -79,7 +78,7 @@ public class EnderArchiveScreen extends ItemCombinerScreen<EnderArchiveScreenHan
                             .map(ClientTooltipComponent::create)
                                     .toList();
 
-            context.renderTooltip(this.font,
+            context.tooltip(this.font,
                     components, mouseX, mouseY,
                     DefaultTooltipPositioner.INSTANCE,
                     null);

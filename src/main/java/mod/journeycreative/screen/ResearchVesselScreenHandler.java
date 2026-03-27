@@ -122,7 +122,7 @@ public class ResearchVesselScreenHandler extends AbstractContainerMenu {
     }
 
     @Override
-    public void clicked(int slotIndex, int button, ClickType actionType, Player player) {
+    public void clicked(int slotIndex, int button, ContainerInput actionType, Player player) {
         ItemStack stack = isInsertAction(slotIndex, button, actionType, player);
         if (!stack.isEmpty()) {
             try {
@@ -158,11 +158,11 @@ public class ResearchVesselScreenHandler extends AbstractContainerMenu {
         }
     }
 
-    private ItemStack isInsertAction(int slotIndex, int button, ClickType actionType, Player player) {
+    private ItemStack isInsertAction(int slotIndex, int button, ContainerInput actionType, Player player) {
         if (slotIndex < this.inventory.getContainerSize() && slotIndex != -999) {
-            if (actionType != ClickType.THROW) {
+            if (actionType != ContainerInput.THROW) {
                 ItemStack stack;
-                if (actionType == ClickType.SWAP && (button >= 0 && button < 9 || button == 40)) { // Press F or 0-9
+                if (actionType == ContainerInput.SWAP && (button >= 0 && button < 9 || button == 40)) { // Press F or 0-9
                     stack = player.getInventory().getItem(button);
                 } else {
                     stack = this.getCarried();
@@ -171,7 +171,7 @@ public class ResearchVesselScreenHandler extends AbstractContainerMenu {
                 return stack;
             }
         } else if (slotIndex >= this.inventory.getContainerSize()) {
-            if (actionType == ClickType.QUICK_MOVE) {
+            if (actionType == ContainerInput.QUICK_MOVE) {
                 Slot slot = this.slots.get(slotIndex);
                 return slot.getItem();
             }
@@ -179,18 +179,18 @@ public class ResearchVesselScreenHandler extends AbstractContainerMenu {
         return ItemStack.EMPTY;
     }
 
-    private void onContainerInsertClick(int slotIndex, int button, ClickType actionType, Player player, ItemStack stack) {
+    private void onContainerInsertClick(int slotIndex, int button, ContainerInput actionType, Player player, ItemStack stack) {
         if (!ResearchVesselSlot.canInsertItem(stack)) {
             return;
         }
 
-        if (actionType == ClickType.SWAP && (button == 40)) { // BLOCK SWAP FROM F KEY BECAUSE OF WEIRD BUG.
+        if (actionType == ContainerInput.SWAP && (button == 40)) { // BLOCK SWAP FROM F KEY BECAUSE OF WEIRD BUG.
             return;
         }
 
-        ClickAction clickType = button == 0 ? ClickAction.PRIMARY : ClickAction.SECONDARY;
+        ClickAction ContainerInput = button == 0 ? ClickAction.PRIMARY : ClickAction.SECONDARY;
         ItemStack inputStack;
-        if (clickType == ClickAction.SECONDARY) {
+        if (ContainerInput == ClickAction.SECONDARY) {
             inputStack = stack.copyWithCount(1);
         } else {
             inputStack = stack;

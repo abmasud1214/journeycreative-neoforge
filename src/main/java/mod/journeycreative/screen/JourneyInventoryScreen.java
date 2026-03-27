@@ -1,11 +1,8 @@
 package mod.journeycreative.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import mod.journeycreative.screen.TrashcanInventory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.datafixers.util.Pair;
 import mod.journeycreative.JourneyCreative;
 import mod.journeycreative.networking.JourneyClientNetworking;
 import mod.journeycreative.networking.PlayerClientUnlocksData;
@@ -14,7 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.HotbarManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
@@ -30,14 +27,12 @@ import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -47,7 +42,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CreativeModeTab;
@@ -111,10 +106,8 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     private net.neoforged.neoforge.client.gui.CreativeTabsScreenPage currentPage = new net.neoforged.neoforge.client.gui.CreativeTabsScreenPage(new java.util.ArrayList<>());
 
     public JourneyInventoryScreen(LocalPlayer player, FeatureFlagSet enabledFeatures, boolean operatorTabEnabled) {
-        super(new JourneyScreenHandler(player), player.getInventory(), CommonComponents.EMPTY);
+        super(new JourneyScreenHandler(player), player.getInventory(), CommonComponents.EMPTY, 195, 136);
         player.containerMenu = this.menu;
-        this.imageHeight = 136;
-        this.imageWidth = 195;
         this.operatorTabEnabled = operatorTabEnabled;
         INVENTORY = this.menu.INVENTORY;
         this.statusEffectsDisplay = new EffectsInInventory(this);
@@ -192,18 +185,18 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
     }
 
-    protected void slotClicked(@Nullable Slot slot, int slotId, int button, ClickType actionType) {
+    protected void slotClicked(@Nullable Slot slot, int slotId, int button, ContainerInput actionType) {
         if (this.isCreativeInventorySlot(slot)) {
             this.searchBox.moveCursorToEnd(false);
             this.searchBox.setHighlightPos(0);
         }
 
-        boolean bl = actionType == ClickType.QUICK_MOVE;
-        actionType = slotId == -999 && actionType == ClickType.PICKUP ? ClickType.THROW : actionType; // If pickup action, then throw
-        if (actionType != ClickType.THROW || this.minecraft.player.canDropItems()) {
+        boolean bl = actionType == ContainerInput.QUICK_MOVE;
+        actionType = slotId == -999 && actionType == ContainerInput.PICKUP ? ContainerInput.THROW : actionType; // If pickup action, then throw
+        if (actionType != ContainerInput.THROW || this.minecraft.player.canDropItems()) {
             this.onMouseClickAction(slot, actionType);
             ItemStack itemStack;
-            if (slot == null && selectedTab.getType() != CreativeModeTab.Type.INVENTORY && actionType != ClickType.QUICK_CRAFT) { // click outside inventory
+            if (slot == null && selectedTab.getType() != CreativeModeTab.Type.INVENTORY && actionType != ContainerInput.QUICK_CRAFT) { // click outside inventory
                 if (!((JourneyScreenHandler) this.menu).getCarried().isEmpty() && this.lastClickOutsideBounds) {
                     if (!this.minecraft.player.canDropItems()) {
                         return;
@@ -253,13 +246,13 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
                             JourneyClientNetworking.sendTrashcanUpdate(itemStack2);
                             slot.setByPlayer(ItemStack.EMPTY);
                             JourneyClientNetworking.clickJourneyStack(ItemStack.EMPTY, ((JourneySlot) slot).slot.index);
-                        } else if (actionType == ClickType.THROW && slot != null && slot.hasItem()) {
+                        } else if (actionType == ContainerInput.THROW && slot != null && slot.hasItem()) {
                             itemStack = slot.remove(button == 0 ? 1 : slot.getItem().getMaxStackSize());
                             itemStack2 = slot.getItem();
                             this.minecraft.player.drop(itemStack, true);
                             JourneyClientNetworking.dropJourneyStack(itemStack, this.minecraft.player);
                             JourneyClientNetworking.clickJourneyStack(itemStack2, ((JourneySlot) slot).slot.index);
-                        } else if (actionType == ClickType.THROW && slotId == -999 && !((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
+                        } else if (actionType == ContainerInput.THROW && slotId == -999 && !((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
                             this.minecraft.player.drop(((JourneyScreenHandler) this.menu).getCarried(), true);
                             JourneyClientNetworking.dropJourneyStack(((JourneyScreenHandler) this.menu).getCarried(), this.minecraft.player);
                             ((JourneyScreenHandler) this.menu).setCarried(ItemStack.EMPTY);
@@ -272,10 +265,10 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
                         }
                     } else {
                         ItemStack itemStack3;
-                        if (actionType != ClickType.QUICK_CRAFT && slot.container == INVENTORY) {
+                        if (actionType != ContainerInput.QUICK_CRAFT && slot.container == INVENTORY) {
                             itemStack = ((JourneyScreenHandler) this.menu).getCarried();
                             itemStack2 = slot.getItem();
-                            if (actionType == ClickType.SWAP) {
+                            if (actionType == ContainerInput.SWAP) {
                                 if (!itemStack2.isEmpty() && this.minecraft.player.getInventory().getItem(button).isEmpty()) {
                                     this.minecraft.player.getInventory().setItem(button, itemStack2.copyWithCount(itemStack2.getMaxStackSize()));
                                     this.minecraft.player.inventoryMenu.broadcastChanges();
@@ -284,7 +277,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
                                 return;
                             }
 
-                            if (actionType == ClickType.CLONE) {
+                            if (actionType == ContainerInput.CLONE) {
                                 if (((JourneyScreenHandler) this.menu).getCarried().isEmpty() && slot.hasItem()) {
                                     itemStack3 = slot.getItem();
                                     ((JourneyScreenHandler) this.menu).setCarried(itemStack3.copyWithCount(itemStack3.getMaxStackSize()));
@@ -293,7 +286,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
                                 return;
                             }
 
-                            if (actionType == ClickType.THROW) {
+                            if (actionType == ContainerInput.THROW) {
                                 if (!itemStack2.isEmpty()) {
                                     itemStack3 = itemStack2.copyWithCount(button == 0 ? 1 : itemStack2.getMaxStackSize());
                                     this.minecraft.player.drop(itemStack3, true);
@@ -330,7 +323,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
                                     JourneyClientNetworking.clickJourneyStack(((JourneyScreenHandler) this.menu).getSlot(45 + k).getItem(), 36 + k);
                                 }
                             } else if (slot != null && Inventory.isHotbarSlot(slot.getContainerSlot()) && selectedTab.getType() != CreativeModeTab.Type.INVENTORY) {
-                                if (actionType == ClickType.THROW && !itemStack.isEmpty() && !((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
+                                if (actionType == ContainerInput.THROW && !itemStack.isEmpty() && !((JourneyScreenHandler) this.menu).getCarried().isEmpty()) {
                                     k = button == 0 ? 1 : itemStack.getCount();
                                     itemStack3 = itemStack.copyWithCount(k);
                                     itemStack.shrink(k);
@@ -547,9 +540,9 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         var10000.forEach(var10001::add);
     }
 
-    protected void renderLabels(GuiGraphics context, int mouseX, int mouseY) {
+    protected void renderLabels(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         if (selectedTab.showTitle()) {
-            context.drawString(this.font, selectedTab.getDisplayName(), 8, 6, -12566464, false);
+            context.text(this.font, selectedTab.getDisplayName(), 8, 6, -12566464, false);
         }
     }
 
@@ -739,9 +732,9 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-        super.render(context, mouseX, mouseY, deltaTicks);
-        this.statusEffectsDisplay.render(context, mouseX, mouseY);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        super.extractRenderState(context, mouseX, mouseY, deltaTicks);
+        this.statusEffectsDisplay.extractRenderState(context, mouseX, mouseY);
 
         if (this.deleteItemSlot != null &&
                 selectedTab.getType() == CreativeModeTab.Type.INVENTORY &&
@@ -753,7 +746,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
 
         if (this.pages.size() != 1) {
             Component page = Component.literal(String.format("%d / %d", this.pages.indexOf(this.currentPage) + 1, this.pages.size()));
-            context.drawString(this.font, page.getVisualOrderText(), this.leftPos + this.imageWidth / 2 - this.font.width(page) / 2, this.topPos - 44, -1);
+            context.text(this.font, page.getVisualOrderText(), this.leftPos + this.imageWidth / 2 - this.font.width(page) / 2, this.topPos - 44, -1);
         }
 
         while (var5.hasNext()) {
@@ -764,7 +757,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             }
         }
 
-        this.renderTooltip(context, mouseX, mouseY);
+        this.extractTooltip(context, mouseX, mouseY);
     }
 
     public boolean showsActiveEffects() {
@@ -807,7 +800,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
     }
 
-    protected void renderBg(GuiGraphics context, float deltaTicks, int mouseX, int mouseY) {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         Iterator var5 = currentPage.getVisibleTabs().iterator();
 
         while(var5.hasNext()) {
@@ -823,7 +816,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         } else {
             context.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
         }
-        this.searchBox.render(context, mouseX, mouseY, deltaTicks);
+        this.searchBox.extractRenderState(context, mouseX, mouseY, deltaTicks);
         int i = this.leftPos + 175;
         int j = this.topPos + 18;
         int k = j + 112;
@@ -836,7 +829,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             this.renderTabIcon(context, selectedTab);
         }
         if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-            InventoryScreen.renderEntityInInventoryFollowsMouse(context, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20, 0.0625F, (float)mouseX, (float)mouseY, this.minecraft.player);
+            InventoryScreen.extractEntityInInventoryFollowsMouse(context, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20, 0.0625F, (float)mouseX, (float)mouseY, this.minecraft.player);
         }
     }
 
@@ -867,7 +860,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         return mouseX >= (double) i && mouseX <= (double) (i + 26) && mouseY >= (double) j && mouseY <= (double) (j + 32);
     }
 
-    protected boolean renderTabTooltipIfHovered(GuiGraphics context, CreativeModeTab group, int mouseX, int mouseY) {
+    protected boolean renderTabTooltipIfHovered(GuiGraphicsExtractor context, CreativeModeTab group, int mouseX, int mouseY) {
         int i = this.getTabX(group);
         int j = this.getTabY(group);
         if (this.isHovering(i + 3, j + 3, 21, 27, (double) mouseX, (double) mouseY)) {
@@ -878,7 +871,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         }
     }
 
-    protected void renderTabIcon(GuiGraphics context, CreativeModeTab group) {
+    protected void renderTabIcon(GuiGraphicsExtractor context, CreativeModeTab group) {
         boolean flag = group == selectedTab;
         boolean flag1 = this.currentPage.isTop(group);
         int i = this.currentPage.getColumn(group);
@@ -894,7 +887,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         context.blitSprite(RenderPipelines.GUI_TEXTURED, aIdentifier[Mth.clamp(i, 0, aIdentifier.length)], j, k, 26, 32);
         int l = j + 13 - 8;
         int i1 = k + 16 - 8 + (flag1 ? 1 : -1);
-        context.renderItem(group.getIconItem(), l, i1);
+        context.item(group.getIconItem(), l, i1);
     }
 
     public boolean isInventoryTabSelected() {
@@ -938,6 +931,11 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
 
     public Slot getDeleteItemSlot() {
         return this.deleteItemSlot;
+    }
+
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
+        graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
     }
 
     

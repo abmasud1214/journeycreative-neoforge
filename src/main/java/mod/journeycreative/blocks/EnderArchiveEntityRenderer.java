@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -44,7 +44,7 @@ public class EnderArchiveEntityRenderer implements BlockEntityRenderer<EnderArch
         state.facing = (Direction) blockEntity.getBlockState().getValueOrElse(EnderArchiveBlock.FACING, Direction.NORTH);
         state.g = blockEntity.getBookTransparency(tickProgress);
 
-        state.lightCoords = LevelRenderer.getLightColor(
+        state.lightCoords = LevelRenderer.getLightCoords(
                 blockEntity.getLevel(),
                 blockEntity.getBlockPos()
         );

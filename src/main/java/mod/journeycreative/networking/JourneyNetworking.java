@@ -9,7 +9,9 @@ import mod.journeycreative.screen.TrashcanInventory;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.item.ItemArgument;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -181,15 +183,15 @@ public class JourneyNetworking {
         CommandSourceStack source = ctx.getSource();
         ServerPlayer player = ctx.getSource().getPlayer();
 
-        ItemStack unlockStack = ItemArgument.getItem(ctx, "item").createItemStack(1, false);
+        ItemStack unlockStack = ItemArgument.getItem(ctx, "item").createItemStack(1);
 
         StateSaverAndLoader state = StateSaverAndLoader.getServerState(source.getServer());
         PlayerUnlocksData playerState = StateSaverAndLoader.getPlayerState(player);
 
         if (playerState.unlockItem(unlockStack)) {
-            player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.unlocked", unlockStack.getItem().getName()), true);
+            player.sendOverlayMessage(Component.translatable("item.journeycreative.research_certificate.unlocked", unlockStack.getItem().components().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY)));
         } else {
-            player.displayClientMessage(Component.translatable("item.journeycreative.research_certificate.already_unlocked", unlockStack.getItem().getName()), true);
+            player.sendOverlayMessage(Component.translatable("item.journeycreative.research_certificate.already_unlocked", unlockStack.getItem().components().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY)));
         }
 
         source.getServer().execute(() -> {
