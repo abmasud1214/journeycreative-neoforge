@@ -9,6 +9,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -26,8 +27,11 @@ public class ModItems {
                     new Item.Properties()
                             .setId(ResourceKey.create(Registries.ITEM, id))
                             .stacksTo(1)
+                            .component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
+                            .component(ModComponents.RESEARCH_VESSEL_TARGET_COMPONENT.get(), ModComponents.ResearchTarget.EMPTY)
                             .component(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT
-                                    .withHidden(DataComponents.CONTAINER, true)))
+                                    .withHidden(DataComponents.CONTAINER, true))
+            )
     );
 
     public static final DeferredItem<BlockItem> ENDER_ARCHIVE_BLOCK_ITEM = ITEMS.register(
