@@ -4,6 +4,8 @@ Journey Creative is a neoforge mod that adds an incremental creative inventory t
 > Both the server and client need this mod installed to function. It works on multiplayer!  
 > You are free to include this mod in your modpack
 
+The source code for the fabric version of this mod can be found [here](https://github.com/abmasud1214/journeycreative).
+
 # Features
 
 - A creative-like inventory accessed directly from within the survival inventory where players can get an unlimited amount of unlocked items.
