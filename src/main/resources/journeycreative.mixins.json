@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "InventoryScreenMixin",
-    "ScreenAccessor"
+    "ScreenAccessor",
+    "BlockItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
