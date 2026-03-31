@@ -2,10 +2,12 @@ package mod.journeycreative.items;
 
 import mod.journeycreative.JourneyCreative;
 import mod.journeycreative.blocks.ModBlocks;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -18,7 +20,10 @@ public class ModItems {
             "research_vessel",
             () -> new ResearchVesselBlockItem(ModBlocks.RESEARCH_VESSEL_BLOCK.get(),
                     new Item.Properties()
-                            .stacksTo(1))
+                            .stacksTo(1)
+                            .component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
+                            .component(ModComponents.RESEARCH_VESSEL_TARGET_COMPONENT.get(), ModComponents.ResearchTarget.EMPTY)
+            )
     );
 
     public static final Supplier<BlockItem> ENDER_ARCHIVE_BLOCK_ITEM = ITEMS.register(
