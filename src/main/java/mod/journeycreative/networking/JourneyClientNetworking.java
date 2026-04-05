@@ -18,7 +18,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = JourneyCreative.MODID)
+@EventBusSubscriber(modid = JourneyCreative.MODID, value = Dist.CLIENT)
 public class JourneyClientNetworking {
     public static void sendGiveItem(int slot, ItemStack stack) {
         PacketDistributor.sendToServer(new JourneyNetworking.GiveItemPayload(slot, stack.copy()));
