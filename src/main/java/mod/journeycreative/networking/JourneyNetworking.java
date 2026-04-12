@@ -61,6 +61,12 @@ public class JourneyNetworking {
         registrar.playToServer(GiveItemPayload.ID, GiveItemPayload.CODEC, JourneyNetworking::giveItemPacket);
         registrar.playToServer(UnlockItemPayload.ID, UnlockItemPayload.CODEC, JourneyNetworking::unlockItemPacket);
         registrar.playToServer(TrashCanPayload.ID, TrashCanPayload.CODEC, JourneyNetworking::trashCanPacket);
+
+        registrar.playToClient(JourneyNetworking.SyncUnlockedItemsPayload.ID, JourneyNetworking.SyncUnlockedItemsPayload.CODEC, JourneyClientNetworking::ReceiveUnlockedItems);
+        registrar.playToClient(JourneyNetworking.SyncResearchItemsUnlockRulePayload.ID, JourneyNetworking.SyncResearchItemsUnlockRulePayload.CODEC, JourneyClientNetworking::ReceiveResearchItemRule);
+        registrar.playToClient(JourneyNetworking.SyncTrashCanPayload.ID, JourneyNetworking.SyncTrashCanPayload.CODEC, JourneyClientNetworking::ReceiveTrashcanSync);
+        registrar.playToClient(JourneyNetworking.ItemWarningMessage.ID, JourneyNetworking.ItemWarningMessage.CODEC, JourneyClientNetworking::ReceiveWarning);
+
     }
 
     public static void rotateItemsPacket(RotateItemsPayload payload, IPayloadContext context) {
