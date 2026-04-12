@@ -558,6 +558,10 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             while (var10.hasNext()) {
                 CreativeModeTab itemGroup = (CreativeModeTab) var10.next();
                 if (itemGroup.getType() == CreativeModeTab.Type.HOTBAR) continue;
+                if (BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(itemGroup)
+                        .map(key -> key == CreativeModeTabs.OP_BLOCKS)
+                        .orElse(false)) continue;
+
                 if (this.isClickInTab(itemGroup, d, e)) {
                     return true;
                 }
@@ -582,6 +586,9 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
             while (var10.hasNext()) {
                 CreativeModeTab itemGroup = (CreativeModeTab) var10.next();
                 if (itemGroup.getType() == CreativeModeTab.Type.HOTBAR) continue;
+                if (BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(itemGroup)
+                        .map(key -> key == CreativeModeTabs.OP_BLOCKS)
+                        .orElse(false)) continue;
                 if (this.isClickInTab(itemGroup, d, e)) {
                     this.setSelectedTab(itemGroup);
                     return true;
@@ -754,6 +761,10 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         while (var5.hasNext()) {
             CreativeModeTab itemGroup = (CreativeModeTab)var5.next();
             if (itemGroup.getType() == CreativeModeTab.Type.HOTBAR) continue;
+            if (BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(itemGroup)
+                    .map(key -> key == CreativeModeTabs.OP_BLOCKS)
+                    .orElse(false)) continue;
+
             if (this.renderTabTooltipIfHovered(context, itemGroup, mouseX, mouseY)) {
                 break;
             }
@@ -809,6 +820,9 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
         while(var5.hasNext()) {
             CreativeModeTab itemGroup = (CreativeModeTab) var5.next();
             if (itemGroup.getType() == CreativeModeTab.Type.HOTBAR) continue;
+            if (BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(itemGroup)
+                    .map(key -> key == CreativeModeTabs.OP_BLOCKS)
+                    .orElse(false)) continue;
             if (itemGroup != selectedTab) {
                 this.renderTabIcon(context, itemGroup);
             }
