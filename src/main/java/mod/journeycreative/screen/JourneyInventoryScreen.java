@@ -878,7 +878,7 @@ public class JourneyInventoryScreen extends AbstractContainerScreen<JourneyInven
 
     protected void renderTabIcon(GuiGraphics context, CreativeModeTab group) {
         boolean bl = group == selectedTab;
-        boolean bl2 = group.row() == CreativeModeTab.Row.TOP;
+        boolean bl2 = currentPage.isTop(group);
         int i = group.column();
         int j = this.leftPos + this.getTabX(group);
         int k = this.topPos - (bl2 ? 28 : -(this.imageHeight - 4));
